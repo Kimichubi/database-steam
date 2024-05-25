@@ -3,7 +3,6 @@ import prisma from "../prisma/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-const secretToken = "secret";
 interface UserService<T> {
   register: (...arg: any) => Promise<any>;
   findByEmail: (...arg: any) => Promise<any>;
@@ -56,7 +55,9 @@ export const userService: UserService<User | any> = {
       }
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
-        const token = jwt.sign(user, secretToken, { expiresIn: "24h" });
+        const token = jwt.sign(user, process.env.SECRET_KEY!, {
+          expiresIn: "24h",
+        });
         return JSON.stringify({ token, user: user.name });
       } else {
         return `Senha ou email errado.`;

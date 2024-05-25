@@ -1,6 +1,7 @@
 import { IncomingMessage, Server, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 
+
 //Just a test key
 const secretToken = "secret"; // Substitua por uma chave segura
 //Function to resolve the Token
@@ -22,7 +23,7 @@ export const verifyToken = (
     return;
   }
   //If you have you go to the logic part
-  jwt.verify(token, secretToken, (err: any, user: any) => {
+  jwt.verify(token, process.env.SECRET_KEY!, (err: any, user: any) => {
     //If is not the same than the secretToken throw ERROR
     if (err) {
       res.statusCode = 403;
