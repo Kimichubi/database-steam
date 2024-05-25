@@ -8,6 +8,7 @@ const port = 3000 || 8080;
 const server = createServer(async (req, res) => {
   //POSTS METHODS
   await userPost.register(req, res);
+  await userPost.login(req, res);
 });
 
 server.listen(port, hostname, () => {
