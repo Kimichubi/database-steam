@@ -17,8 +17,8 @@ export const userController = {
       }
     } catch (error) {
       if (error instanceof Error) {
-        res.writeHead(400, { "Content-Type": "text/plain" });
-        res.end(`Cadastro não sucedido ${error}`);
+        res.statusCode = 400;
+        res.end(JSON.stringify(error));
         return;
       }
     }
@@ -29,15 +29,20 @@ export const userController = {
   ): Promise<any> => {
     const { email, password } = await body;
     try {
-      const user = await userService.login({ email, password });
-      if (user) {
-        res.writeHead(200);
-        return res.end(user);
+      const token = await userService.login({ email, password });
+      if (token !== null) {
+        res.statusCode = 200;
+        res.end(JSON.stringify({ token }));
+        return token;
+      } else {
+        res.statusCode = 400;
+        res.end(`Email ou senha estão errados!`);
+        return;
       }
     } catch (error) {
       if (error instanceof Error) {
-        res.writeHead(400, { "Content-Type": "text/plain" });
-        res.end(`Login não encontrado ${error}`);
+        res.statusCode = 400;
+        res.end(JSON.stringify(error));
         return;
       }
     }

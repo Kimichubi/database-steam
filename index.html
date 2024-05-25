@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <form
+      id="uploadForm"
+      action="http://localhost:3000/upload"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+      <input type="file" accept="jpeg" id="content" name="content" />
+      <input type="text" id="name" name="name" />
+      <!-- <input type="text" id="name" name="name" /> -->
+      <input type="submit" value="Enviar" />
+    </form>
+
+    <script>
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault(); // Impede o envio padrão do formulário
+
+          const formToUpload = document.getElementById("uploadForm");
+          const formData = new FormData(formToUpload); // Cria um objeto FormData com os dados do formulário
+
+          const token =
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJnYWJAZXhhbXBsZS5jb20iLCJuYW1lIjoiZ2FiIiwicGFzc3dvcmQiOiIkMmIkMTAkZ0ZCNUFFZ0xkSXdzczU0eXh4ckowLnVLQlZydjJXRTcxcy5jQVF4bHVrb3ZmWmJnRkI0T0ciLCJjcmVhdGVkQXQiOiIyMDI0LTA1LTI1VDAzOjQwOjQ3LjExM1oiLCJ1cGRhdGVkQXQiOiIyMDI0LTA1LTI1VDAzOjQwOjQ3LjExM1oiLCJpYXQiOjE3MTY2MTEwNTAsImV4cCI6MTcxNjY5NzQ1MH0.RAzGAp1iChUhMX3Mz9_0DRT0PJnP_e0xYATJ8HHJ4aw";
+
+          try {
+            const response = await fetch("http://localhost:3000/upload", {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
+              body: formData, // Passa o objeto FormData como corpo da solicitação
+            });
+
+            const result = await response.json();
+            console.log(result);
+          } catch (error) {
+            console.error(error);
+          }
+        });
+    </script>
+  </body>
+</html>

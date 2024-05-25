@@ -8,7 +8,7 @@ const userPost = {
       if (req.url === "/register") {
         req
           .on("error", (err) => {
-            console.log(err);
+            throw new Error(`${err}`);
           })
           .on("data", (chunk) => {
             body.push(chunk.toString());
@@ -20,21 +20,25 @@ const userPost = {
       }
     }
   },
-  login: async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+  login: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ): Promise<void | boolean | any> => {
     if (req.method === "POST") {
       let body: any = [];
       if (req.url === "/login") {
         req
           .on("error", (err) => {
-            console.log(err);
+            res.statusCode = 400;
+            throw new Error(`${err}`);
           })
           .on("data", (chunk) => {
             body.push(chunk.toString());
           })
+
           .on("end", async () => {
             body = await JSON.parse(body.join(""));
             await userController.login(body, res);
-      
           });
       }
     }

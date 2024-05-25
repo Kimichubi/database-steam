@@ -1,11 +1,10 @@
 import { IncomingMessage, Server, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 
-
 //Just a test key
 const secretToken = "secret"; // Substitua por uma chave segura
 //Function to resolve the Token
-export const verifyToken = (
+export const verifyToken = async (
   req: IncomingMessage,
   res: ServerResponse,
   next: Function
@@ -23,7 +22,7 @@ export const verifyToken = (
     return;
   }
   //If you have you go to the logic part
-  jwt.verify(token, process.env.SECRET_KEY!, (err: any, user: any) => {
+  await jwt.verify(token, process.env.SECRET_KEY!, (err: any, user: any) => {
     //If is not the same than the secretToken throw ERROR
     if (err) {
       res.statusCode = 403;
@@ -35,8 +34,11 @@ export const verifyToken = (
     //User to req.user = user
     //@ts-ignore
     req.user = user;
+    //@ts-ignore
     //Next midleware
     //@ts-ignore
+
     next();
+    return;
   });
 };

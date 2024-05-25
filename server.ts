@@ -1,22 +1,41 @@
 import { createServer } from "http";
-import prisma from "./prisma/prisma";
 import userPost from "./router/userPost";
 import { verifyToken } from "./token/verifyToken";
-
+import { postPost } from "./router/postPost";
+import cors from "cors";
 const hostname = "localhost";
 const port = 3000 || 8080;
 
 const server = createServer(async (req, res) => {
   //POSTS METHODS without Token
-  await userPost.register(req, res);
-  await userPost.login(req, res);
-  if (req.method === "GET" && req.url === "/try") {
-    verifyToken(req, res, async () => {
-      res.statusCode = 200;
-      //@ts-ignore
-      res.end("Acesso permitido" + " " + req.user.name);
-    });
+  if (req.method === "POST") {
+    if (req.url === "/register") {
+      await userPost.register(req, res);
+    } else if (req.url === "/login") {
+      await userPost.login(req, res);
+    }
+    return;
   }
+
+  //@ts-ignore
+
+  cors()(req, res, async () => {
+    verifyToken(req, res, async () => {
+      if (req.method === "POST") {
+        if (req.url === "/upload") {
+          await postPost.newPost(req, res);
+        }
+        return;
+      } else if (req.method === "GET") {
+        if (req.url === "/posts") {
+          await postPost.getAllPost(req, res);
+          return;
+        }
+        return;
+      }
+    });
+    return;
+  });
 });
 
 server.listen(port, hostname, () => {

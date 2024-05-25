@@ -14,7 +14,7 @@ export const userService: UserService<User | any> = {
     email,
     name,
     password,
-  }: User): Promise<void | boolean | Error> => {
+  }: User): Promise<void | boolean | Error | User> => {
     const userAlreadyExists = await userService.findByEmail(email);
     if (userAlreadyExists) {
       throw new Error("Email or password already exists");
@@ -28,29 +28,33 @@ export const userService: UserService<User | any> = {
         data: user,
       });
       if (sucess) {
-        return true;
+        return sucess;
       }
     } catch (error) {
       if (error instanceof Error) {
-        return new Error(`Erro:${error}`);
+        console.error(error);
+        return error;
       }
     }
   },
-  findByEmail: async (email: string): Promise<User | null> => {
+  findByEmail: async (email: string): Promise<any> => {
     try {
       const user = await prisma.users.findUnique({
         where: { email }, // Corrigido para garantir que o email seja passado corretamente
       });
       return user;
     } catch (error) {
-      console.error("Erro ao buscar usuário por email:", error);
-      throw new Error("Erro ao buscar usuário por email");
+      if (error instanceof Error) {
+        console.error(error);
+        return error;
+      }
     }
   },
   login: async ({ email, password }: User) => {
     try {
       const user = await userService.findByEmail(email);
-      if (!user) {
+
+      if (user === null) {
         throw new Error("Cadastro não encontrado, por favor, registre-se  ");
       }
       const isMatch = await bcrypt.compare(password, user.password);
@@ -58,13 +62,12 @@ export const userService: UserService<User | any> = {
         const token = jwt.sign(user, process.env.SECRET_KEY!, {
           expiresIn: "24h",
         });
-        return JSON.stringify({ token, user: user.name });
-      } else {
-        return `Senha ou email errado.`;
+        return token;
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.log(error);
+        console.error(error);
+        return;
       }
     }
   },
