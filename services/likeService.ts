@@ -67,6 +67,42 @@ export const likeService = {
       }
     }
   },
+  removeLike: async (postId: number, userId: number, res: ServerResponse) => {
+    try {
+      // Verifica se o like existe
+      const existingLike = await prisma.likes.findFirst({
+        where: {
+          postId: postId,
+          userId: userId,
+        },
+      });
+
+
+      if (!existingLike) {
+        res.statusCode = 404;
+        res.end(
+          JSON.stringify({ message: "Like not found", status: res.statusCode })
+        );
+        return;
+      }
+
+      // Remove o like
+      const like = await prisma.likes.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+      return like;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
   getPostWithMoreLikes: async (res: ServerResponse) => {
     try {
       const postsWithLikeCount = await prisma.likes.groupBy({
@@ -100,6 +136,57 @@ export const likeService = {
         return { ...post, likeCount };
       });
 
+      return postsWithLikes;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
+  },
+  getPostWithMoreLikesUser: async (
+    res: ServerResponse,
+    userId: string | number
+  ) => {
+    try {
+      const userLikes = await prisma.likes.groupBy({
+        by: ["postId"],
+        where: {
+          userId: Number(userId), // Filtramos pelos likes do usuário específico
+        },
+        _count: {
+          postId: true,
+        },
+        orderBy: {
+          _count: {
+            postId: "desc",
+          },
+        },
+      });
+      const postIds = userLikes.map((likeGroup) => likeGroup.postId);
+
+      // Buscar os posts completos com os IDs obtidos
+      const posts = await prisma.post.findMany({
+        where: {
+          id: {
+            in: postIds,
+          },
+        },
+        orderBy: {
+          id: "asc",
+        },
+      });
+
+      // Combinar as contagens de likes com os posts
+      const postsWithLikes = posts.map((post) => {
+        const likeCount =
+          userLikes.find((likeGroup) => likeGroup.postId === post.id)?._count
+            .postId || 0;
+        return { ...post, likeCount };
+      });
+
+      // Retornar os posts com a contagem de likes
       return postsWithLikes;
     } catch (error) {
       if (error instanceof Error) {

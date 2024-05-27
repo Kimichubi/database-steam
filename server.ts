@@ -48,8 +48,18 @@ const server = createServer(async (req, res) => {
         } else if (req.url === "/posts/likeds") {
           await likeRoute.getPostWithMoreLike(req, res);
           return;
+        } else if (req.url === "/posts/user/likeds") {
+          await likeRoute.getPostWithMoreLikeUser(req, res);
+          return;
         }
         return;
+      } else if (req.method === "DELETE") {
+        const url = new URL(`http://${req.headers.host}${req.url}`);
+        const id = url.searchParams.get("id");
+        if (req.url === `/like/delete?id=${id}`) {
+          await likeRoute.likeToRemove(req, res, Number(id));
+          return;
+        }
       }
       return;
     });

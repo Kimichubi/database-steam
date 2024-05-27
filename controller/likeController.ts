@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, Server, ServerResponse } from "http";
 import { likeService } from "../services/likeService";
 
 export const likeController = {
@@ -33,6 +33,26 @@ export const likeController = {
       }
     }
   },
+  removeLike: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    postId: number
+  ) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+
+      const response = await likeService.removeLike(postId, userId, res);
+
+      return response;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
+  },
   postsWithMoreLikes: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       const response = await likeService.getPostWithMoreLikes(res);
@@ -42,6 +62,21 @@ export const likeController = {
       if (error instanceof Error) {
         res.statusCode = 400;
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
+  },
+  postsWithMoreLikesUser: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+      const response = await likeService.getPostWithMoreLikesUser(res, userId);
+
+      return response;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error }));
         return;
       }
     }
