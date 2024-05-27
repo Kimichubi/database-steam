@@ -16,9 +16,14 @@ export const verifyToken = async (
   const token = authHeader && authHeader.split(" ")[1];
 
   //If you don't have any token, you can't request
-  if (token == null) {
+  if (!token) {
     res.statusCode = 401;
-    res.end("Token não fornecido");
+    res.end(
+      JSON.stringify({
+        message: "Nenhum token encontrado",
+        status: res.statusCode,
+      })
+    );
     return;
   }
   //If you have you go to the logic part
@@ -26,7 +31,7 @@ export const verifyToken = async (
     //If is not the same than the secretToken throw ERROR
     if (err) {
       res.statusCode = 403;
-      res.end("Token inválido");
+      res.end(JSON.stringify({ message: err, status: res.statusCode }));
       return;
     }
 

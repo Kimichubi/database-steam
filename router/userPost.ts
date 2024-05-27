@@ -8,7 +8,8 @@ const userPost = {
       if (req.url === "/register") {
         req
           .on("error", (err) => {
-            throw new Error(`${err}`);
+            res.statusCode = 400;
+            res.end(JSON.stringify(err));
           })
           .on("data", (chunk) => {
             body.push(chunk.toString());
@@ -30,7 +31,7 @@ const userPost = {
         req
           .on("error", (err) => {
             res.statusCode = 400;
-            throw new Error(`${err}`);
+            res.end(JSON.stringify(err));
           })
           .on("data", (chunk) => {
             body.push(chunk.toString());
@@ -38,7 +39,7 @@ const userPost = {
 
           .on("end", async () => {
             body = await JSON.parse(body.join(""));
-            await userController.login(body, res);
+             await userController.login(body, res);
           });
       }
     }

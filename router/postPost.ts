@@ -1,115 +1,145 @@
 import { IncomingMessage, ServerResponse } from "http";
 import fs from "fs";
-
 import path from "path";
-import { postController } from "../controller/postController";
 import formidable from "formidable";
-import sharp from "sharp";
+import { postController } from "../controller/postController";
+
+// Função para criar uma URL acessível para a imagem
+const getImageUrl = (req: IncomingMessage, imagePath: string) => {
+  const { protocol, host } = new URL(
+    req.headers.origin || `http://${req.headers.host}`
+  );
+  return `${protocol}//${host}/${imagePath}`;
+};
 
 export const postPost = {
   newPost: async (req: IncomingMessage, res: ServerResponse) => {
-    if (req.method === "POST" && req.url === "/upload") {
-      const form = formidable({
-        uploadDir: path.join(__dirname, "..", "uploads"), // Configura o diretório de upload
-        keepExtensions: true, //Mantém a extensão do arquivo original
-      });
-      //  @ts-ignore
-      if (!fs.existsSync(form.uploadDir)) {
-        //   @ts-ignore
-        fs.mkdirSync(form.uploadDir);
+    const form = formidable({
+      uploadDir: path.join(__dirname, "../", "uploads"), // Configura o diretório de upload
+      keepExtensions: true, // Mantém a extensão do arquivo original
+    });
+
+    // Cria o diretório de upload se não existir
+    //@ts-ignore
+    if (!fs.existsSync(form.uploadDir)) {
+      //@ts-ignore
+      fs.mkdirSync(form.uploadDir);
+    }
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end(
+          JSON.stringify({
+            message: "Erro ao processar o upload",
+            status: res.statusCode,
+          })
+        );
+        console.error(err);
+        return;
       }
 
-      form.parse(req, async (err, fields, files) => {
+      // Verifica se existe algum arquivo enviado
+      if (!files || !files.content) {
+        res.statusCode = 400;
+        res.end(
+          JSON.stringify({
+            message: "Nenhum arquivo foi enviado",
+            status: res.statusCode,
+          })
+        );
+        return;
+      }
+
+      // Obtém o arquivo enviado
+      const file = Array.isArray(files.content)
+        ? files.content[0]
+        : files.content;
+
+      // Verifica se o caminho do arquivo está presente
+      if (!file || !file.filepath) {
+        res.statusCode = 400;
+        res.end(
+          JSON.stringify({
+            message: "O caminho do arquivo não está disponível",
+          })
+        );
+        return;
+      }
+
+      const oldPath = file.filepath;
+      const newPath = path.join(
+        //@ts-ignore
+        form.uploadDir,
+        file.originalFilename || "uploaded_file.jpg"
+      );
+
+      fs.rename(oldPath, newPath, async (err) => {
         if (err) {
           res.statusCode = 500;
-          res.end(JSON.stringify({ message: "Erro ao processar o upload" }));
+          res.end(
+            JSON.stringify({
+              message: "Erro ao salvar o arquivo",
+              status: res.statusCode,
+            })
+          );
           console.error(err);
           return;
         }
 
-        //    Verifica se existe algum arquivo enviado
-        if (!files || !files.content) {
-          res.statusCode = 400;
-          res.end(JSON.stringify({ message: "Nenhum arquivo foi enviado" }));
-          return;
-        }
-
-        //   Obtém o arquivo enviado
-        const file = Array.isArray(files.content)
-          ? files.content[0]
-          : files.content;
-
-        //    Verifica se o caminho do arquivo está presente
-        if (!file || !file.filepath) {
-          res.statusCode = 400;
-          res.end(
-            JSON.stringify({
-              message: "O caminho do arquivo não está disponível",
-            })
+        try {
+          const imageUrl = getImageUrl(
+            req,
+            path.join("uploads", path.basename(newPath))
           );
+
+          await postController.newPost(
+            fields.name![0],
+            imageUrl,
+            //@ts-ignore
+            req.user.id,
+            res
+          ); // Verifique se req.user.id está sendo definido corretamente
+
+          res.statusCode = 200;
+          req.on("end", () => {
+            res.end(
+              JSON.stringify({
+                message: "Arquivo salvo com sucesso",
+                imageUrl,
+                status: res.statusCode,
+              })
+            );
+          });
+
           return;
-        }
-
-        const oldPath = file.filepath;
-        const newPath = path.join(
-          //    @ts-ignore
-          form.uploadDir,
-          file.originalFilename || "uploaded_file.jpg"
-        );
-
-        fs.rename(oldPath, newPath, async (err) => {
-          if (err) {
-            res.statusCode = 500;
-            res.end(JSON.stringify({ message: "Erro ao salvar o arquivo" }));
-            console.error(err);
-            return;
-          }
-
-          try {
-            //      @ts-ignore
-            await postController.newPost(
-              //    @ts-ignore
-              fields.name[0],
-              newPath,
-              //     @ts-ignore
-              req.user.id,
-              res
-            ); // Verifique se req.user.id está sendo definido corretamente
-            res.statusCode = 200;
-            res.end(JSON.stringify({ message: "Arquivo salvo com sucesso" }));
-            return;
-          } catch (controllerError) {
+        } catch (controllerError) {
+          req.on("end", () => {
             res.statusCode = 500;
             res.end(
               JSON.stringify({
                 message: "Erro no postController",
                 error: controllerError,
+                status: res.statusCode,
               })
             );
-            return;
-          }
-        });
-      });
-    } else {
-      res.statusCode = 404;
-      res.end(JSON.stringify({ message: "Rota não encontrada" }));
-      return;
-    }
-  },
-  getAllPost: async (req: IncomingMessage, res: ServerResponse) => {
-    if (req.method === "GET" && req.url === "/posts") {
-      try {
-        const posts = await postController.allPosts(req, res);
-        res.statusCode = 200;
-        res.end(JSON.stringify(posts));
-        return;
-      } catch (error) {
-        if (error) {
-          res.statusCode = 400;
-          res.end(JSON.stringify({ error: error }));
+          });
+
           return;
         }
-      }
+      });
+    });
+  },
+  getAllPost: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const posts = await postController.allPosts(req, res);
+      res.statusCode = 200;
+      res.end(JSON.stringify({ posts, status: res.statusCode }));
+      return;
+    } catch (error) {
+      res.statusCode = 400;
+      res.end(JSON.stringify({ message: error }));
+      return;
     }
   },
 };

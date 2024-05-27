@@ -1,20 +1,20 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE "users" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  - Added the required column `password` to the `users` table without a default value. This is not possible if the table is not empty.
-  - Made the column `name` on table `users` required. This step will fail if there are existing NULL values in that column.
-
-*/
--- AlterTable
-ALTER TABLE "users" ADD COLUMN     "password" TEXT NOT NULL,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ALTER COLUMN "name" SET NOT NULL;
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "post" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
+    "fanArtUrl" TEXT NOT NULL,
     "authorId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -45,7 +45,10 @@ CREATE TABLE "likes" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "post_name_key" ON "post"("name");
+CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "post_fanArtUrl_key" ON "post"("fanArtUrl");
 
 -- AddForeignKey
 ALTER TABLE "post" ADD CONSTRAINT "post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

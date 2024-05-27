@@ -28,8 +28,8 @@ model users {
 
 model post {
   id        Int      @id @default(autoincrement())
-  name      String    @unique
-  content   String
+  name      String    
+  fanArtUrl   String @unique
   author    users    @relation(fields: [authorId], references: [id])
   authorId  Int
   favorites favorites[]  
@@ -56,5 +56,7 @@ model likes {
   postId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+
+  @@unique([userId, postId]) // Adiciona unicidade na combinação de userId e postId
 }
 

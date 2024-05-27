@@ -1,23 +1,29 @@
+import { ServerResponse } from "http";
 import { User } from "../interface/user";
 import prisma from "../prisma/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 interface UserService<T> {
-  register: (...arg: any) => Promise<any>;
+  register: (
+    { email, name, password }: any,
+    res: ServerResponse
+  ) => Promise<any>;
   findByEmail: (...arg: any) => Promise<any>;
-  login: ({ email, password }: any) => Promise<any>;
+  login: ({ email, password }: any, res: ServerResponse) => Promise<any>;
 }
 
 export const userService: UserService<User | any> = {
-  register: async ({
-    email,
-    name,
-    password,
-  }: User): Promise<void | boolean | Error | User> => {
+  
+  register: async (
+    { email, name, password }: User,
+    res: ServerResponse
+  ): Promise<void | boolean | Error | User | string | any> => {
     const userAlreadyExists = await userService.findByEmail(email);
     if (userAlreadyExists) {
-      throw new Error("Email or password already exists");
+      res.statusCode = 400;
+      res.end(JSON.stringify({ message: "Email já cadastrado!" }));
+      return;
     }
 
     try {
@@ -50,24 +56,32 @@ export const userService: UserService<User | any> = {
       }
     }
   },
-  login: async ({ email, password }: User) => {
+  login: async ({ email, password }: User, res: ServerResponse) => {
     try {
       const user = await userService.findByEmail(email);
 
-      if (user === null) {
-        throw new Error("Cadastro não encontrado, por favor, registre-se  ");
+      if (!user) {
+        res.statusCode = 404;
+        res.end(
+          JSON.stringify({
+            message: "Usuario não cadastrado por favor cadastre-se!",
+          })
+        );
+        return;
       }
       const isMatch = await bcrypt.compare(password, user.password);
+
       if (isMatch) {
         const token = jwt.sign(user, process.env.SECRET_KEY!, {
           expiresIn: "24h",
         });
+
         return token;
       }
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);
-        return;
+        return error;
       }
     }
   },

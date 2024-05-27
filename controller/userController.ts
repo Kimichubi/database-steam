@@ -9,12 +9,14 @@ export const userController = {
     const { email, password, name } = body;
 
     try {
-      const success = await userService.register({ email, name, password });
-      if (success) {
-        res.writeHead(200, { "Content-Type": "text/plain" });
+      const user = await userService.register({ email, name, password }, res);
+      
+      if (user) {
+        res.statusCode = 200;
         res.end(`Cadastro bem sucedido. Bem vindo ${name}`);
         return;
       }
+
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
@@ -29,14 +31,11 @@ export const userController = {
   ): Promise<any> => {
     const { email, password } = await body;
     try {
-      const token = await userService.login({ email, password });
-      if (token !== null) {
+      const token = await userService.login({ email, password }, res);
+
+      if (token) {
         res.statusCode = 200;
         res.end(JSON.stringify({ token }));
-        return token;
-      } else {
-        res.statusCode = 400;
-        res.end(`Email ou senha estão errados!`);
         return;
       }
     } catch (error) {

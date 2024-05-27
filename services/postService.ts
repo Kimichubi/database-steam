@@ -7,25 +7,17 @@ export const postService = {
     try {
       // Only create a post if both name and image path are provided
       if (name && imagePath) {
-        const image = fs.readFile(imagePath, (err, data) => {
-          if (err) {
-            return err;
-          }
-          return data;
-        });
-        console.log(image);
         const post = await prisma.post.create({
           //@ts-ignore
           data: {
             name,
-            content: imagePath,
-            authorId, // Use the image path as content
+            fanArtUrl: imagePath,
+            authorId: authorId, // Use the image path as content
           },
         });
         return post;
-      } else {
-        throw new Error("Missing name or image path");
-      }
+      } 
+      
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);
@@ -42,7 +34,7 @@ export const postService = {
           },
         ],
         select: {
-          content: true, // Seleciona o atributo 'content'
+          fanArtUrl: true, // Seleciona o atributo 'content'
           author: {
             select: {
               name: true,
@@ -58,4 +50,5 @@ export const postService = {
       }
     }
   },
+  
 };

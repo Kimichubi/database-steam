@@ -9,12 +9,18 @@ export const postController = {
     res: ServerResponse
   ) => {
     try {
-      if (!imagePath) {
+      if (!imagePath || !name) {
         res.statusCode = 400;
-        res.end("No image path provided");
+        res.end(
+          JSON.stringify({
+            message: "Imagem ou nome não foram providos!",
+            status: res.statusCode,
+          })
+        );
       }
       // Pass both name and image path to the service
       await postService.newPost(name, imagePath, author);
+
       res.statusCode = 201;
       res.end(
         JSON.stringify({
@@ -37,11 +43,11 @@ export const postController = {
     const posts = await postService.getPosts();
     try {
       req.on("end", () => {});
-      res.end(JSON.stringify(posts));
+      res.end(JSON.stringify({ posts, status: res.statusCode }));
       return;
     } catch (error) {
       req.on("end", () => {});
-      res.end(JSON.stringify(error));
+      res.end(JSON.stringify({ message: error, status: res.statusCode }));
       return;
     }
   },

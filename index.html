@@ -12,23 +12,27 @@
       method="POST"
       enctype="multipart/form-data"
     >
-      <input type="file" accept="jpeg" id="content" name="content" />
+      <input type="file" id="content" name="content" />
       <input type="text" id="name" name="name" />
-      <!-- <input type="text" id="name" name="name" /> -->
-      <input type="submit" value="Enviar" />
+      <button id="button" type="submit">Upload</button>
+      <!-- <img
+        src="http://localhost:5500/uploads\68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f776174747061642d6d656469612d736572766963652f53746f7279496d6167652f4541394f57496750466b2d6f57673d3d2d3533322e3135636438326662616537623362343137383136363036383833393.jpeg"
+        alt=""
+      /> -->
     </form>
 
     <script>
       document
         .getElementById("uploadForm")
         .addEventListener("submit", async function (event) {
-          event.preventDefault(); // Impede o envio padrão do formulário
+          // Impede o envio padrão do formulário
+          event.preventDefault();
 
           const formToUpload = document.getElementById("uploadForm");
           const formData = new FormData(formToUpload); // Cria um objeto FormData com os dados do formulário
 
           const token =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJnYWJAZXhhbXBsZS5jb20iLCJuYW1lIjoiZ2FiIiwicGFzc3dvcmQiOiIkMmIkMTAkZ0ZCNUFFZ0xkSXdzczU0eXh4ckowLnVLQlZydjJXRTcxcy5jQVF4bHVrb3ZmWmJnRkI0T0ciLCJjcmVhdGVkQXQiOiIyMDI0LTA1LTI1VDAzOjQwOjQ3LjExM1oiLCJ1cGRhdGVkQXQiOiIyMDI0LTA1LTI1VDAzOjQwOjQ3LjExM1oiLCJpYXQiOjE3MTY2MTEwNTAsImV4cCI6MTcxNjY5NzQ1MH0.RAzGAp1iChUhMX3Mz9_0DRT0PJnP_e0xYATJ8HHJ4aw";
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJnYWJAZXhhbXBsZS5jb20iLCJuYW1lIjoiZ2FiIiwicGFzc3dvcmQiOiIkMmIkMTAkb0hvUkRRWUJ6SlJheWw3UU5rbnZJT2hpUFA4T1hoLjIuR3pjdVZOc0Fsc2xIaWRoNGtVWFMiLCJjcmVhdGVkQXQiOiIyMDI0LTA1LTI2VDAyOjI4OjM0LjQyNVoiLCJ1cGRhdGVkQXQiOiIyMDI0LTA1LTI2VDAyOjI4OjM0LjQyNVoiLCJpYXQiOjE3MTY2OTA1MjQsImV4cCI6MTcxNjc3NjkyNH0.PygNxC9Z-vWDKPjAmj-Chgv16UeD6UHRtti3E6P4CxE";
 
           try {
             const response = await fetch("http://localhost:3000/upload", {
@@ -38,9 +42,6 @@
               },
               body: formData, // Passa o objeto FormData como corpo da solicitação
             });
-
-            const result = await response.json();
-            console.log(result);
           } catch (error) {
             console.error(error);
           }
