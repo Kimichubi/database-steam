@@ -10,13 +10,17 @@ export const userController = {
 
     try {
       const user = await userService.register({ email, name, password }, res);
-      
+
       if (user) {
         res.statusCode = 200;
-        res.end(`Cadastro bem sucedido. Bem vindo ${name}`);
+        res.end(
+          JSON.stringify({
+            message: `Cadastro bem sucedido. Bem vindo ${name}`,
+            status: res.statusCode,
+          })
+        );
         return;
       }
-
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
@@ -29,7 +33,7 @@ export const userController = {
     body: { email: string; password: string },
     res: ServerResponse
   ): Promise<any> => {
-    const { email, password } = await body;
+    const { email, password } = body;
     try {
       const token = await userService.login({ email, password }, res);
 

@@ -39,7 +39,7 @@ const userPost = {
 
           .on("end", async () => {
             body = await JSON.parse(body.join(""));
-             await userController.login(body, res);
+            await userController.login(body, res);
           });
       }
     }

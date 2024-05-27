@@ -6,9 +6,7 @@ import { postController } from "../controller/postController";
 
 // Função para criar uma URL acessível para a imagem
 const getImageUrl = (req: IncomingMessage, imagePath: string) => {
-  const { protocol, host } = new URL(
-    req.headers.origin || `http://${req.headers.host}`
-  );
+  const { protocol, host } = new URL(`http://localhost:3000`);
   return `${protocol}//${host}/${imagePath}`;
 };
 
@@ -71,7 +69,7 @@ export const postPost = {
       const newPath = path.join(
         //@ts-ignore
         form.uploadDir,
-        file.originalFilename || "uploaded_file.jpg"
+        file.newFilename || "uploaded_file.jpg"
       );
 
       fs.rename(oldPath, newPath, async (err) => {
@@ -134,11 +132,17 @@ export const postPost = {
     try {
       const posts = await postController.allPosts(req, res);
       res.statusCode = 200;
-      res.end(JSON.stringify({ posts, status: res.statusCode }));
+
+      req.on("end", () => {
+        res.end(JSON.stringify({ posts, status: res.statusCode }));
+      });
       return;
     } catch (error) {
       res.statusCode = 400;
-      res.end(JSON.stringify({ message: error }));
+      req.on("end", () => {
+        res.end(JSON.stringify({ message: error }));
+      });
+
       return;
     }
   },

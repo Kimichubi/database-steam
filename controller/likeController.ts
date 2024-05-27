@@ -14,15 +14,35 @@ export const likeController = {
       if (!userId || !postId) {
         res.statusCode = 400;
         res.end(
-          JSON.stringify({ message: "Post id ou user id não informados", status:res.statusCode })
+          JSON.stringify({
+            message: "Post id ou user id não informados",
+            status: res.statusCode,
+          })
         );
+        return;
       }
 
-      await likeService.like(Number(postId), userId, res);
+      const like = await likeService.like(Number(postId), userId, res);
+
+      return like;
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
-        res.end(JSON.stringify({message: error, status: res.statusCode}));
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
+  },
+  postsWithMoreLikes: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await likeService.getPostWithMoreLikes(res);
+
+      return response;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
       }
     }
   },

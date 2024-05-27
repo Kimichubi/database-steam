@@ -17,6 +17,7 @@ export const postController = {
             status: res.statusCode,
           })
         );
+        return;
       }
       // Pass both name and image path to the service
       await postService.newPost(name, imagePath, author);
@@ -28,6 +29,7 @@ export const postController = {
           status: res.statusCode,
         })
       );
+      return;
     } catch (error) {
       console.error("Error creating post:", error);
       res.statusCode = 400;
@@ -37,6 +39,7 @@ export const postController = {
           status: res.statusCode,
         })
       );
+      return;
     }
   },
   allPosts: async (req: IncomingMessage, res: ServerResponse) => {

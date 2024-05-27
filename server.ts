@@ -5,11 +5,12 @@ import { postPost } from "./router/postPost";
 import cors from "cors";
 import { likeRoute } from "./router/likeRoutes";
 import { URL } from "url";
+
 const hostname = "localhost";
 const port = 3000 || 8080;
 
 const server = createServer(async (req, res) => {
-  //POSTS METHODS without Token
+  //METHOD = POST sem TOKEN
   if (req.method === "POST") {
     if (req.url === "/register") {
       await userPost.register(req, res);
@@ -20,24 +21,35 @@ const server = createServer(async (req, res) => {
     }
   }
 
+  //METODOS COM TOKEN
   cors()(req, res, async () => {
+    //Verificar se o user tem o TOKEN
     verifyToken(req, res, async () => {
+      //METODOS POST
       if (req.method === "POST") {
-        const url =  new URL(`http://${req.headers.host}${req.url}`);
-        const id =  url.searchParams.get("id");
-
+        const url = new URL(`http://${req.headers.host}${req.url}`);
+        const id = url.searchParams.get("id");
+        //      /uploads
         if (req.url === "/upload") {
           await postPost.newPost(req, res);
           return;
-        } else if (req.url === `/like?id=${id}`) {
+        } //      /like?id=${id}
+        else if (req.url === `/like?id=${id}`) {
           await likeRoute.likeRoute(req, res, id!);
           return;
         }
-      } else if (req.method === "GET") {
+        return;
+      } //METODOS GET
+      else if (req.method === "GET") {
+        //  /posts
         if (req.url === "/posts") {
           await postPost.getAllPost(req, res);
           return;
+        } else if (req.url === "/posts/likeds") {
+          await likeRoute.getPostWithMoreLike(req, res);
+          return;
         }
+        return;
       }
       return;
     });

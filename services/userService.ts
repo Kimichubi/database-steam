@@ -14,7 +14,6 @@ interface UserService<T> {
 }
 
 export const userService: UserService<User | any> = {
-  
   register: async (
     { email, name, password }: User,
     res: ServerResponse
@@ -36,6 +35,7 @@ export const userService: UserService<User | any> = {
       if (sucess) {
         return sucess;
       }
+      
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);

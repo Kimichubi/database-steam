@@ -32,7 +32,7 @@
           const formData = new FormData(formToUpload); // Cria um objeto FormData com os dados do formulário
 
           const token =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJnYWJAZXhhbXBsZS5jb20iLCJuYW1lIjoiZ2FiIiwicGFzc3dvcmQiOiIkMmIkMTAkb0hvUkRRWUJ6SlJheWw3UU5rbnZJT2hpUFA4T1hoLjIuR3pjdVZOc0Fsc2xIaWRoNGtVWFMiLCJjcmVhdGVkQXQiOiIyMDI0LTA1LTI2VDAyOjI4OjM0LjQyNVoiLCJ1cGRhdGVkQXQiOiIyMDI0LTA1LTI2VDAyOjI4OjM0LjQyNVoiLCJpYXQiOjE3MTY2OTA1MjQsImV4cCI6MTcxNjc3NjkyNH0.PygNxC9Z-vWDKPjAmj-Chgv16UeD6UHRtti3E6P4CxE";
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJnYWJAZXhhbXBsZS5jb20iLCJuYW1lIjoiZ2FiIiwicGFzc3dvcmQiOiIkMmIkMTAkQ1pwZ1NFcUFQWGxiSmY4RmlhTmJFT0pQcVpYc3RsUXRPREljdkNCVWplQklyYlVTS2x4VC4iLCJjcmVhdGVkQXQiOiIyMDI0LTA1LTI3VDE3OjM2OjMxLjMwNloiLCJ1cGRhdGVkQXQiOiIyMDI0LTA1LTI3VDE3OjM2OjMxLjMwNloiLCJpYXQiOjE3MTY4MzE0NTgsImV4cCI6MTcxNjkxNzg1OH0.tNaKVzHsU7DuWcC4Pq3woB6bD6OaNOzqefrXmxANq5U";
 
           try {
             const response = await fetch("http://localhost:3000/upload", {
@@ -42,6 +42,7 @@
               },
               body: formData, // Passa o objeto FormData como corpo da solicitação
             });
+            console.log(response);
           } catch (error) {
             console.error(error);
           }
