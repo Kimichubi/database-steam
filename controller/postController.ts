@@ -1,6 +1,6 @@
-import { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, Server, ServerResponse } from "http";
 import { postService } from "../services/postService";
-
+import prisma from "../prisma/prisma";
 export const postController = {
   newPost: async (
     name: string,
@@ -40,6 +40,23 @@ export const postController = {
         })
       );
       return;
+    }
+  },
+  postToRemove: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    postId: number
+  ) => {
+    try {
+      const postDeleted = await postService.postToRemove(postId, res);
+
+      return postDeleted;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
     }
   },
   allPosts: async (req: IncomingMessage, res: ServerResponse) => {

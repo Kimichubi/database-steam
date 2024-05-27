@@ -59,6 +59,9 @@ const server = createServer(async (req, res) => {
         if (req.url === `/like/delete?id=${id}`) {
           await likeRoute.likeToRemove(req, res, Number(id));
           return;
+        } else if (req.url === `/post/delete?id=${id}`) {
+          await postPost.postToDelete(req, res, Number(id));
+          return;
         }
       }
       return;

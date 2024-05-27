@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import fs from "fs";
+import fs, { stat } from "fs";
 import path from "path";
 import formidable from "formidable";
 import { postController } from "../controller/postController";
@@ -127,6 +127,27 @@ export const postPost = {
         }
       });
     });
+  },
+  postToDelete: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    postId: number
+  ) => {
+    try {
+      const response = await postController.postToRemove(req, res, postId);
+
+      if (response) {
+        res.statusCode = 200;
+        res.end(JSON.stringify({ message: response, status: res.statusCode }));
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
   },
   getAllPost: async (req: IncomingMessage, res: ServerResponse) => {
     try {
