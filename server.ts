@@ -5,6 +5,7 @@ import { postPost } from "./router/postPost";
 import cors from "cors";
 import { likeRoute } from "./router/likeRoutes";
 import { URL } from "url";
+import { favoriteRoute } from "./router/favoriteRoute";
 
 const hostname = "localhost";
 const port = 3000 || 8080;
@@ -33,9 +34,12 @@ const server = createServer(async (req, res) => {
         if (req.url === "/upload") {
           await postPost.newPost(req, res);
           return;
-        } //      /like?id=${id}
-        else if (req.url === `/like?id=${id}`) {
-          await likeRoute.likeRoute(req, res, id!);
+        } //      /like
+        else if (req.url === `/like`) {
+          await likeRoute.likeRoute(req, res);
+          return;
+        } else if (req.url === "/favorite") {
+          await favoriteRoute.favoriteRoute(req, res);
           return;
         }
         return;
@@ -51,16 +55,23 @@ const server = createServer(async (req, res) => {
         } else if (req.url === "/posts/user/likeds") {
           await likeRoute.getPostWithMoreLikeUser(req, res);
           return;
+        } else if (req.url === "/posts/favorites") {
+          await favoriteRoute.getPostWithMoreFavorites(req, res);
+          return;
+        } else if (req.url === "/posts/user/favorites") {
+          await favoriteRoute.getPostWithMoreFavoritesUser(req, res);
+          return;
         }
         return;
       } else if (req.method === "DELETE") {
-        const url = new URL(`http://${req.headers.host}${req.url}`);
-        const id = url.searchParams.get("id");
-        if (req.url === `/like/delete?id=${id}`) {
-          await likeRoute.likeToRemove(req, res, Number(id));
+        if (req.url === `/like/delete`) {
+          await likeRoute.likeToRemove(req, res);
           return;
-        } else if (req.url === `/post/delete?id=${id}`) {
-          await postPost.postToDelete(req, res, Number(id));
+        } else if (req.url === `/post/delete`) {
+          await postPost.postToDelete(req, res);
+          return;
+        } else if (req.url === `/favorite/delete`) {
+          await favoriteRoute.favoriteToRemove(req, res);
           return;
         }
       }

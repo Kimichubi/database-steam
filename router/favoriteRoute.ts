@@ -1,10 +1,9 @@
-import { IncomingMessage, Server, ServerResponse } from "http";
-
-import { likeController } from "../controller/likeController";
+import { IncomingMessage, ServerResponse } from "http";
 import prisma from "../prisma/prisma";
+import { favoriteController } from "../controller/favoriteController";
 
-export const likeRoute = {
-  likeRoute: async (req: IncomingMessage, res: ServerResponse) => {
+export const favoriteRoute = {
+  favoriteRoute: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       let body: any = [];
       req
@@ -19,13 +18,13 @@ export const likeRoute = {
               id: Number(postId),
             },
           });
-          const like = await likeController.like(req, res, postId);
+          const favorite = await favoriteController.favorite(req, res, postId);
 
-          if (like!) {
+          if (favorite!) {
             res.statusCode = 200;
             res.end(
               JSON.stringify({
-                message: `Like adicionado no post ${post?.name}`,
+                message: `Favorito adicionado no post ${post?.name}`,
                 status: res.statusCode,
               })
             );
@@ -41,7 +40,7 @@ export const likeRoute = {
       }
     }
   },
-  likeToRemove: async (req: IncomingMessage, res: ServerResponse) => {
+  favoriteToRemove: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       let body: any = [];
       req
@@ -51,7 +50,11 @@ export const likeRoute = {
         .on("data", async (chunk) => {
           body.push(JSON.parse(chunk));
           const [{ postId }] = body;
-          const response = await likeController.removeLike(req, res, postId);
+          const response = await favoriteController.removeFavorite(
+            req,
+            res,
+            Number(postId)
+          );
           if (response) {
             res.statusCode = 200;
             res.end(
@@ -69,9 +72,15 @@ export const likeRoute = {
       }
     }
   },
-  getPostWithMoreLike: async (req: IncomingMessage, res: ServerResponse) => {
+  getPostWithMoreFavorites: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ) => {
     try {
-      const response = await likeController.postsWithMoreLikes(req, res);
+      const response = await favoriteController.postsWithMoreFavorites(
+        req,
+        res
+      );
 
       res.statusCode = 200;
       res.end(JSON.stringify({ message: response, status: res.statusCode }));
@@ -85,12 +94,15 @@ export const likeRoute = {
       }
     }
   },
-  getPostWithMoreLikeUser: async (
+  getPostWithMoreFavoritesUser: async (
     req: IncomingMessage,
     res: ServerResponse
   ) => {
     try {
-      const response = await likeController.postsWithMoreLikesUser(req, res);
+      const response = await favoriteController.postsWithMoreFavoritesUser(
+        req,
+        res
+      );
       if (response) {
         res.statusCode = 200;
         res.end(JSON.stringify({ message: response, status: res.statusCode }));

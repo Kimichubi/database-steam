@@ -72,11 +72,10 @@ export const likeService = {
       // Verifica se o like existe
       const existingLike = await prisma.likes.findFirst({
         where: {
-          postId: postId,
+          postId: Number(postId),
           userId: userId,
         },
       });
-
 
       if (!existingLike) {
         res.statusCode = 404;

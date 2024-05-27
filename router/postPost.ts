@@ -128,19 +128,30 @@ export const postPost = {
       });
     });
   },
-  postToDelete: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    postId: number
-  ) => {
+  postToDelete: async (req: IncomingMessage, res: ServerResponse) => {
     try {
-      const response = await postController.postToRemove(req, res, postId);
+      let body: any = [];
+      req
+        .on("error", (error) => {
+          console.log(error);
+        })
+        .on("data", async (chunk) => {
+          body.push(JSON.parse(chunk));
+          const [{ postId }] = body;
+          const response = await postController.postToRemove(
+            req,
+            res,
+            Number(postId)
+          );
 
-      if (response) {
-        res.statusCode = 200;
-        res.end(JSON.stringify({ message: response, status: res.statusCode }));
-        return;
-      }
+          if (response) {
+            res.statusCode = 200;
+            res.end(
+              JSON.stringify({ message: response, status: res.statusCode })
+            );
+          }
+          return;
+        });
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
