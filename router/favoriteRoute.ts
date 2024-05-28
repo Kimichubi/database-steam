@@ -22,6 +22,7 @@ export const favoriteRoute = {
 
           if (favorite!) {
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({
                 message: `Favorito adicionado no post ${post?.name}`,
@@ -35,6 +36,7 @@ export const favoriteRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -57,6 +59,7 @@ export const favoriteRoute = {
           );
           if (response) {
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({ message: response, status: res.statusCode })
             );
@@ -67,6 +70,7 @@ export const favoriteRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -83,12 +87,14 @@ export const favoriteRoute = {
       );
 
       res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ message: response, status: res.statusCode }));
 
       return;
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -105,6 +111,7 @@ export const favoriteRoute = {
       );
       if (response) {
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: response, status: res.statusCode }));
         return;
       }
@@ -113,6 +120,7 @@ export const favoriteRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error }));
         return;
       }

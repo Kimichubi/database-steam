@@ -27,6 +27,7 @@ export const postPost = {
     form.parse(req, async (err, fields, files) => {
       if (err) {
         res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Erro ao processar o upload",
@@ -40,6 +41,7 @@ export const postPost = {
       // Verifica se existe algum arquivo enviado
       if (!files || !files.content) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Nenhum arquivo foi enviado",
@@ -57,6 +59,7 @@ export const postPost = {
       // Verifica se o caminho do arquivo está presente
       if (!file || !file.filepath) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "O caminho do arquivo não está disponível",
@@ -75,6 +78,7 @@ export const postPost = {
       fs.rename(oldPath, newPath, async (err) => {
         if (err) {
           res.statusCode = 500;
+          res.setHeader("Content-Type", "application/json");
           res.end(
             JSON.stringify({
               message: "Erro ao salvar o arquivo",
@@ -100,7 +104,9 @@ export const postPost = {
           ); // Verifique se req.user.id está sendo definido corretamente
 
           res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
           req.on("end", () => {
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({
                 message: "Arquivo salvo com sucesso",
@@ -112,8 +118,9 @@ export const postPost = {
 
           return;
         } catch (controllerError) {
-          req.on("end", () => {
+          if (controllerError instanceof Error) {
             res.statusCode = 500;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({
                 message: "Erro no postController",
@@ -121,7 +128,8 @@ export const postPost = {
                 status: res.statusCode,
               })
             );
-          });
+            return;
+          }
 
           return;
         }
@@ -146,6 +154,7 @@ export const postPost = {
 
           if (response) {
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({ message: response, status: res.statusCode })
             );
@@ -155,6 +164,7 @@ export const postPost = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -163,19 +173,28 @@ export const postPost = {
   getAllPost: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       const posts = await postController.allPosts(req, res);
-      res.statusCode = 200;
-
-      req.on("end", () => {
+      if (posts) {
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ posts, status: res.statusCode }));
-      });
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Posts não encontrados",
+            status: res.statusCode,
+          })
+        );
+        return;
+      }
+
       return;
     } catch (error) {
-      res.statusCode = 400;
-      req.on("end", () => {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error }));
-      });
-
-      return;
+        return;
+      }
     }
   },
 };

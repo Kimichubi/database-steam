@@ -11,6 +11,7 @@ export const postController = {
     try {
       if (!imagePath || !name) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Imagem ou nome não foram providos!",
@@ -21,24 +22,12 @@ export const postController = {
       }
       // Pass both name and image path to the service
       await postService.newPost(name, imagePath, author);
-
-      res.statusCode = 201;
-      res.end(
-        JSON.stringify({
-          message: "Image uploaded successfully",
-          status: res.statusCode,
-        })
-      );
       return;
     } catch (error) {
-      console.error("Error creating post:", error);
-      res.statusCode = 400;
-      res.end(
-        JSON.stringify({
-          message: error,
-          status: res.statusCode,
-        })
-      );
+      if (error instanceof Error) {
+        console.error(error);
+        return;
+      }
       return;
     }
   },
@@ -54,21 +43,22 @@ export const postController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
   allPosts: async (req: IncomingMessage, res: ServerResponse) => {
-    const posts = await postService.getPosts();
     try {
-      req.on("end", () => {});
-      res.end(JSON.stringify({ posts, status: res.statusCode }));
-      return;
+      const posts = await postService.getPosts();
+
+      return posts;
     } catch (error) {
-      req.on("end", () => {});
-      res.end(JSON.stringify({ message: error, status: res.statusCode }));
-      return;
+      if (error instanceof Error) {
+        console.error(error);
+        return;
+      }
     }
   },
 };

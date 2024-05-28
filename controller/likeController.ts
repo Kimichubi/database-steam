@@ -13,6 +13,7 @@ export const likeController = {
 
       if (!userId || !postId) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Post id ou user id não informados",
@@ -28,6 +29,7 @@ export const likeController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -48,6 +50,7 @@ export const likeController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -61,6 +64,7 @@ export const likeController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -76,6 +80,7 @@ export const likeController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error }));
         return;
       }

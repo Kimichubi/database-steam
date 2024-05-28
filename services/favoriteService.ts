@@ -62,6 +62,7 @@ export const favoriteService = {
       const isFavorited = await prisma.favorites.findFirst({
         where: {
           postId: postId,
+          userId: userId,
         },
       });
 
@@ -74,6 +75,7 @@ export const favoriteService = {
       const favorite = await prisma.favorites.delete({
         where: {
           id: isFavorited.id,
+          userId: userId,
         },
       });
 

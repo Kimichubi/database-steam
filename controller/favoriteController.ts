@@ -13,6 +13,7 @@ export const favoriteController = {
 
       if (!userId || !postId) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Post id ou user id não informados",
@@ -32,6 +33,7 @@ export const favoriteController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -56,6 +58,7 @@ export const favoriteController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -68,13 +71,17 @@ export const favoriteController = {
       return response;
     } catch (error) {
       if (error instanceof Error) {
+        res.setHeader("Content-Type", "application/json");
         res.statusCode = 400;
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
-  postsWithMoreFavoritesUser: async (req: IncomingMessage, res: ServerResponse) => {
+  postsWithMoreFavoritesUser: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ) => {
     try {
       //@ts-ignore
       const userId = req.user.id;
@@ -87,6 +94,7 @@ export const favoriteController = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error }));
         return;
       }

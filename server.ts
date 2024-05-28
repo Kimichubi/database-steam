@@ -63,7 +63,8 @@ const server = createServer(async (req, res) => {
           return;
         }
         return;
-      } else if (req.method === "DELETE") {
+      } //METODO DELETE
+      else if (req.method === "DELETE") {
         if (req.url === `/like/delete`) {
           await likeRoute.likeToRemove(req, res);
           return;
@@ -72,6 +73,15 @@ const server = createServer(async (req, res) => {
           return;
         } else if (req.url === `/favorite/delete`) {
           await favoriteRoute.favoriteToRemove(req, res);
+          return;
+        }
+      } //METODO PUT
+      else if (req.method === "PUT") {
+        if (req.url === "/user/update/password") {
+          await userPost.updatePassword(req, res);
+          return;
+        } else if (req.url === "/user/update") {
+          await userPost.updateUser(req, res);
           return;
         }
       }

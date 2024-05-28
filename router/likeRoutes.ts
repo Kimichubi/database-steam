@@ -23,6 +23,7 @@ export const likeRoute = {
 
           if (like!) {
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({
                 message: `Like adicionado no post ${post?.name}`,
@@ -36,6 +37,7 @@ export const likeRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -54,6 +56,7 @@ export const likeRoute = {
           const response = await likeController.removeLike(req, res, postId);
           if (response) {
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({ message: response, status: res.statusCode })
             );
@@ -64,6 +67,7 @@ export const likeRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -74,12 +78,14 @@ export const likeRoute = {
       const response = await likeController.postsWithMoreLikes(req, res);
 
       res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ message: response, status: res.statusCode }));
 
       return;
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -93,6 +99,7 @@ export const likeRoute = {
       const response = await likeController.postsWithMoreLikesUser(req, res);
       if (response) {
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: response, status: res.statusCode }));
         return;
       }
@@ -101,6 +108,7 @@ export const likeRoute = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error }));
         return;
       }
