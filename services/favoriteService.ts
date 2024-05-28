@@ -6,6 +6,7 @@ export const favoriteService = {
     try {
       if (!userId && !postId) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Usuario não informado ou Post não existe",
@@ -23,6 +24,7 @@ export const favoriteService = {
 
       if (isFavorited) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "O post já está favoritado!" }));
         return;
       }
@@ -38,6 +40,7 @@ export const favoriteService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -51,6 +54,7 @@ export const favoriteService = {
     try {
       if (!userId && !postId) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Usuario não informado ou Post não existe",
@@ -68,6 +72,7 @@ export const favoriteService = {
 
       if (!isFavorited) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: "O post não está favoritado!" }));
         return;
       }
@@ -83,6 +88,7 @@ export const favoriteService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -128,6 +134,7 @@ export const favoriteService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -182,6 +189,7 @@ export const favoriteService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }

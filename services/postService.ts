@@ -36,6 +36,7 @@ export const postService = {
       console.log(post);
       if (!post) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: "Post não existe", status: res.statusCode })
         );
@@ -64,6 +65,7 @@ export const postService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         console.error(error);
         return;

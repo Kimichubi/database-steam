@@ -18,6 +18,7 @@ export const likeService = {
 
       if (!user) {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Por favor faça login",
@@ -29,6 +30,7 @@ export const likeService = {
 
       if (!postExists) {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: "Post não existe", status: res.statusCode })
         );
@@ -45,6 +47,7 @@ export const likeService = {
       if (existingLike) {
         // Retorna uma mensagem se o like já existir
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: `Like já foi adicionado no post ${postExists.name}`,
@@ -79,6 +82,7 @@ export const likeService = {
 
       if (!existingLike) {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: "Like not found", status: res.statusCode })
         );
@@ -95,6 +99,7 @@ export const likeService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: error.message, status: res.statusCode })
         );
@@ -139,6 +144,7 @@ export const likeService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
@@ -190,6 +196,7 @@ export const likeService = {
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }

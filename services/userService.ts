@@ -33,6 +33,7 @@ export const userService: UserService<User | any> = {
     const userAlreadyExists = await userService.findByEmail(email);
     if (userAlreadyExists) {
       res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ message: "Email já cadastrado!" }));
       return;
     }
@@ -73,6 +74,7 @@ export const userService: UserService<User | any> = {
 
       if (!user) {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Usuario não cadastrado por favor cadastre-se!",
@@ -105,6 +107,7 @@ export const userService: UserService<User | any> = {
     try {
       if (!currentPassword || !newPassword) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Senhas não informadas",
@@ -114,6 +117,7 @@ export const userService: UserService<User | any> = {
         return;
       } else if (currentPassword === newPassword) {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Senhas são iguais, por favor digite senhas diferentes!",
@@ -131,6 +135,7 @@ export const userService: UserService<User | any> = {
 
       if (!user) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "User não existe!",
@@ -155,6 +160,7 @@ export const userService: UserService<User | any> = {
         return update;
       } else {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Senhas não são iguais",
@@ -184,6 +190,7 @@ export const userService: UserService<User | any> = {
 
       if (!user) {
         res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "User não existe!",
@@ -229,6 +236,7 @@ export const userService: UserService<User | any> = {
         return response;
       } else {
         res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({
             message: "Email ou nome não informados",
