@@ -18,6 +18,7 @@ export const verifyToken = async (
   //If you don't have any token, you can't request
   if (!token) {
     res.statusCode = 401;
+    res.setHeader("Content-Type", "application/json");
     res.end(
       JSON.stringify({
         message: "Nenhum token encontrado",
@@ -31,6 +32,7 @@ export const verifyToken = async (
     //If is not the same than the secretToken throw ERROR
     if (err) {
       res.statusCode = 403;
+      res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify({ message: err, status: res.statusCode }));
       return;
     }

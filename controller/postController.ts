@@ -1,6 +1,6 @@
 import { IncomingMessage, Server, ServerResponse } from "http";
 import { postService } from "../services/postService";
-import prisma from "../prisma/prisma";
+
 export const postController = {
   newPost: async (
     name: string,

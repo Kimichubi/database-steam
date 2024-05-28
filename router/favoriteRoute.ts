@@ -13,6 +13,17 @@ export const favoriteRoute = {
         .on("data", async (chunk) => {
           body.push(JSON.parse(chunk));
           const [{ postId }] = body;
+          if (!postId) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: `Post Id não informado`,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
           const post = await prisma.post.findUnique({
             where: {
               id: Number(postId),
