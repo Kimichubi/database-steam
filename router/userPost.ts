@@ -21,7 +21,7 @@ const userPost = {
       return;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
+        res.statusCode = 500;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
@@ -37,9 +37,7 @@ const userPost = {
 
       req
         .on("error", (err) => {
-          res.statusCode = 400;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+          console.error(err);
           return;
         })
         .on("data", (chunk) => {
@@ -118,6 +116,38 @@ const userPost = {
           const [{ email, name }] = body;
           await userController.updateUser(email, name, userId, res);
         });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        return;
+      }
+    }
+  },
+  getUserInfos: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+
+      const user = await userController.getUser(Number(userId));
+
+      if (!user) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Usuario não foi encontrado",
+            status: res.statusCode,
+          })
+        );
+        return;
+      }
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: user, status: res.statusCode }));
+      return;
     } catch (error) {
       if (error instanceof Error) {
         res.statusCode = 400;

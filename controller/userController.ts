@@ -22,12 +22,12 @@ export const userController = {
         );
         return;
       }
+
+      return;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify(error));
-        return;
+        console.error(error);
+        return error;
       }
     }
   },
@@ -38,28 +38,18 @@ export const userController = {
     try {
       const { email, password } = body;
       const token = await userService.login({ email, password }, res);
-
-      if (!token) {
-        res.statusCode = 404;
+      if (token) {
+        res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: "Email ou senha incorretos!",
-            status: res.statusCode,
-          })
-        );
+        res.end(JSON.stringify({ message: token, status: res.statusCode }));
         return;
       }
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ message: token, status: res.statusCode }));
 
       return;
     } catch (error) {
       if (error instanceof Error) {
-        res.setHeader("Content-Type", "application/json");
-        res.statusCode = 404;
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        console.log(error);
+        return;
       }
     }
   },
@@ -115,6 +105,17 @@ export const userController = {
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
+      }
+    }
+  },
+  getUser: async (id: number) => {
+    try {
+      const user = await userService.getUserInfo(id);
+      return user;
+    } catch (error) {
+      if (error) {
+        console.error(error);
+        return error;
       }
     }
   },

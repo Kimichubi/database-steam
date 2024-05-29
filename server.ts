@@ -8,9 +8,10 @@ import { URL } from "url";
 import { favoriteRoute } from "./router/favoriteRoute";
 
 const hostname = "localhost";
-const port = 3000 || 8080;
+const port = 8080;
 
 const server = createServer(async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   //METHOD = POST sem TOKEN
   if (req.method === "POST") {
     if (req.url === "/register") {
@@ -18,6 +19,13 @@ const server = createServer(async (req, res) => {
       return;
     } else if (req.url === "/login") {
       await userPost.login(req, res);
+      return;
+    }
+  }
+  //GET = GET sem TOKEN
+  if (req.method === "GET") {
+    if (req.url === "/posts") {
+      await postPost.getAllPost(req, res);
       return;
     }
   }
@@ -46,10 +54,7 @@ const server = createServer(async (req, res) => {
       } //METODOS GET
       else if (req.method === "GET") {
         //  /posts
-        if (req.url === "/posts") {
-          await postPost.getAllPost(req, res);
-          return;
-        } else if (req.url === "/posts/likeds") {
+        if (req.url === "/posts/likeds") {
           await likeRoute.getPostWithMoreLike(req, res);
           return;
         } else if (req.url === "/posts/user/likeds") {
@@ -60,6 +65,10 @@ const server = createServer(async (req, res) => {
           return;
         } else if (req.url === "/posts/user/favorites") {
           await favoriteRoute.getPostWithMoreFavoritesUser(req, res);
+          return;
+        } else if (req.url === "/user/infos") {
+          //@ts-ignore
+          await userPost.getUserInfos(req, res);
           return;
         }
         return;

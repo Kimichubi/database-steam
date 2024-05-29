@@ -23,6 +23,8 @@ interface UserService<T> {
     userId: number,
     res: ServerResponse
   ) => Promise<any>;
+
+  getUserInfo: (id: number) => Promise<any>;
 }
 
 export const userService: UserService<User | any> = {
@@ -30,24 +32,56 @@ export const userService: UserService<User | any> = {
     { email, name, password }: User,
     res: ServerResponse
   ): Promise<void | boolean | Error | User | string | any> => {
-    const userAlreadyExists = await userService.findByEmail(email);
-    if (userAlreadyExists) {
-      res.statusCode = 400;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ message: "Email já cadastrado!" }));
-      return;
-    }
-
     try {
+      if (!email) {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Por favor informe um email!",
+            status: res.statusCode,
+          })
+        );
+        return;
+      } else if (!password) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Por favor informe uma senha!",
+            status: res.statusCode,
+          })
+        );
+        return;
+      } else if (!name) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Por favor informe um nome!",
+            status: res.statusCode,
+          })
+        );
+        return;
+      }
+      const userAlreadyExists = await userService.findByEmail(email);
+
+      if (userAlreadyExists) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: "Email já cadastrado!" }));
+        return;
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = { email, name, password: hashedPassword };
-
       const sucess = await prisma.users.create({
         data: user,
       });
       if (sucess) {
         return sucess;
       }
+      return;
     } catch (error) {
       if (error instanceof Error) {
         console.error(error);
@@ -90,8 +124,16 @@ export const userService: UserService<User | any> = {
         });
 
         return token;
+      } else {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            message: "Senha ou Email errados!",
+          })
+        );
+        return;
       }
-      return;
     } catch (error) {
       if (error instanceof Error) {
         return error;
@@ -248,6 +290,20 @@ export const userService: UserService<User | any> = {
     } catch (error) {
       if (error instanceof Error) {
         return error;
+      }
+    }
+  },
+  getUserInfo: async (id: number) => {
+    try {
+      const user = await prisma.users.findUnique({
+        where: {
+          id,
+        },
+      });
+      return user;
+    } catch (error) {
+      if (error) {
+        console.log(error);
       }
     }
   },
