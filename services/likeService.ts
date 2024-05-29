@@ -1,65 +1,37 @@
-import { ServerResponse } from "http";
+import { Prisma } from "@prisma/client";
 import prisma from "../prisma/prisma";
 
-export const likeService = {
-  like: async (postId: number, userId: number, res: ServerResponse) => {
+const likeService = {
+  newLike: async (postId: number, userId: number) => {
     try {
+      if (!postId) {
+        throw new Error("Post não existe");
+      }
+      if (!userId) {
+        throw new Error("User não existe");
+      }
+
       const postExists = await prisma.post.findUnique({
         where: {
           id: postId,
         },
       });
-
-      const user = await prisma.users.findUnique({
-        where: {
-          id: userId,
-        },
-      });
-
-      if (!user) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: "Por favor faça login",
-            status: res.statusCode,
-          })
-        );
-        return;
-      }
-
       if (!postExists) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: "Post não existe", status: res.statusCode })
-        );
-        return;
+        throw new Error("Post não existe");
       }
-
-      const existingLike = await prisma.likes.findFirst({
+      const likeAlready = await prisma.likes.findMany({
         where: {
-          userId: userId,
-          postId: postId,
+          postId,
+          userId,
         },
       });
-
-      if (existingLike) {
-        // Retorna uma mensagem se o like já existir
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: `Like já foi adicionado no post ${postExists.name}`,
-          })
-        );
-        return;
+      if (likeAlready.length >= 1) {
+        throw new Error("Voce já curtiu este post");
       }
-
       const like = await prisma.likes.create({
         data: {
-          userId,
           postId,
+          userId,
         },
       });
 
@@ -70,136 +42,81 @@ export const likeService = {
       }
     }
   },
-  removeLike: async (postId: number, userId: number, res: ServerResponse) => {
+  postWithMoreLikes: async () => {
     try {
-      // Verifica se o like existe
-      const existingLike = await prisma.likes.findFirst({
+      const postsWithMoreLikes = await prisma.post.findMany({
+        include: {
+          _count: true,
+        },
+
+        orderBy: {
+          likes: {
+            _count: "desc",
+          },
+        },
+        take: 10, // Limita o número de resultados retornados (por exemplo, 10)
+      });
+      return postsWithMoreLikes;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  userMostLikedPost: async (userId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("Usuario não cadastrado ou não encontrado!");
+      }
+      const post = await prisma.post.findMany({
         where: {
-          postId: Number(postId),
-          userId: userId,
+          likes: {
+            some: {
+              userId,
+            },
+          },
+        },
+        orderBy: {
+          likes: {
+            _count: "desc",
+          },
+        },
+        take: 5,
+        include: {
+          _count: {
+            select: { likes: true },
+          },
         },
       });
-
-      if (!existingLike) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: "Like not found", status: res.statusCode })
-        );
-        return;
+      return post;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  removeLike: async (postId: number, userId: number) => {
+    try {
+      if (!postId) {
+        throw new Error("Post não foi encontrado!");
       }
 
-      // Remove o like
-      const like = await prisma.likes.delete({
+      const like = await prisma.likes.deleteMany({
         where: {
-          id: existingLike.id,
+          postId,
+          userId,
         },
       });
+
+      if (like.count < 1) {
+        throw new Error("Like não foi encontrado!");
+      }
       return like;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: error.message, status: res.statusCode })
-        );
-        return;
-      }
-    }
-  },
-  getPostWithMoreLikes: async (res: ServerResponse) => {
-    try {
-      const postsWithLikeCount = await prisma.likes.groupBy({
-        by: ["postId"],
-        _count: {
-          postId: true,
-        },
-        orderBy: {
-          _count: {
-            postId: "desc",
-          },
-        },
-      });
-
-      const postIds = postsWithLikeCount.map((likeGroup) => likeGroup.postId);
-
-      const posts = await prisma.post.findMany({
-        where: {
-          id: {
-            in: postIds,
-          },
-        },
-        orderBy: {
-          id: "asc", // Você pode ordenar como preferir, ou até omitir se não for necessário
-        },
-      });
-      const postsWithLikes = posts.map((post) => {
-        const likeCount =
-          postsWithLikeCount.find((likeGroup) => likeGroup.postId === post.id)
-            ?._count.postId || 0;
-        return { ...post, likeCount };
-      });
-
-      return postsWithLikes;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  getPostWithMoreLikesUser: async (
-    res: ServerResponse,
-    userId: string | number
-  ) => {
-    try {
-      const userLikes = await prisma.likes.groupBy({
-        by: ["postId"],
-        where: {
-          userId: Number(userId), // Filtramos pelos likes do usuário específico
-        },
-        _count: {
-          postId: true,
-        },
-        orderBy: {
-          _count: {
-            postId: "desc",
-          },
-        },
-      });
-      const postIds = userLikes.map((likeGroup) => likeGroup.postId);
-
-      // Buscar os posts completos com os IDs obtidos
-      const posts = await prisma.post.findMany({
-        where: {
-          id: {
-            in: postIds,
-          },
-        },
-        orderBy: {
-          id: "asc",
-        },
-      });
-
-      // Combinar as contagens de likes com os posts
-      const postsWithLikes = posts.map((post) => {
-        const likeCount =
-          userLikes.find((likeGroup) => likeGroup.postId === post.id)?._count
-            .postId || 0;
-        return { ...post, likeCount };
-      });
-
-      // Retornar os posts com a contagem de likes
-      return postsWithLikes;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
+        return error;
       }
     }
   },
 };
+export default likeService;

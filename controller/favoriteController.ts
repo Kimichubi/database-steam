@@ -1,103 +1,146 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { favoriteService } from "../services/favoriteService";
+import favoriteService from "../services/favoriteService";
 
-export const favoriteController = {
-  favorite: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    postId: number | string
-  ) => {
-    try {
-      //@ts-ignore
-      const userId = req.user.id;
+const favoriteController = {
+  newFavorite: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
 
-      if (!userId || !postId) {
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({
-            message: "Post id ou user id não informados",
-            status: res.statusCode,
-          })
+          JSON.stringify({ message: err.message, status: res.statusCode })
         );
         return;
-      }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ postId }] = body;
+          //@ts-ignore
+          const userId = req.user.id;
 
-      const favorite = await favoriteService.favorite(
-        Number(postId),
-        userId,
-        res
-      );
+          const favorite = await favoriteService.newFavorite(
+            Number(postId),
+            userId
+          );
 
-      return favorite;
+          if (favorite instanceof Error) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: favorite.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: favorite, status: res.statusCode })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
+  },
+  postWithMoreFavorites: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const posts = await favoriteService.postWithMoreFavorite();
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
+      return;
     } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
+      if (error) {
+        res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
-  removeFavorite: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    postId: number
-  ) => {
+  userMostFavoritedPost: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       //@ts-ignore
       const userId = req.user.id;
-
-      const response = await favoriteService.deleteFavorite(
-        postId,
-        userId,
-        res
-      );
-
-      return response;
+      const posts = await favoriteService.userMostFavoritedPost(userId);
+      if (posts instanceof Error) {
+        throw new Error(posts.message);
+      }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
+      return;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
+        res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
-  postsWithMoreFavorites: async (req: IncomingMessage, res: ServerResponse) => {
-    try {
-      const response = await favoriteService.getPostWithMoreFavorites(res);
-
-      return response;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.setHeader("Content-Type", "application/json");
-        res.statusCode = 400;
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  postsWithMoreFavoritesUser: async (
-    req: IncomingMessage,
-    res: ServerResponse
-  ) => {
-    try {
-      //@ts-ignore
-      const userId = req.user.id;
-      const response = await favoriteService.getPostWithMoreFavoritesUser(
-        res,
-        userId
-      );
-
-      return response;
-    } catch (error) {
-      if (error instanceof Error) {
+  removeFavorite: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error }));
+        res.end(
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
         return;
-      }
-    }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          //@ts-ignore
+          const userId = req.user.id;
+          const [{ postId }] = body;
+          const favorite = await favoriteService.removeFavorite(
+            Number(postId),
+            userId
+          );
+
+          if (favorite instanceof Error) {
+            throw new Error(favorite.message);
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: favorite, status: res.statusCode })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
   },
 };
+
+export default favoriteController;

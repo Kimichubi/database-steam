@@ -28,7 +28,7 @@ export const verifyToken = async (
     return;
   }
   //If you have you go to the logic part
-   jwt.verify(token, process.env.SECRET_KEY!, (err: any, user: any) => {
+  jwt.verify(token, process.env.SECRET_KEY!, (err: any, user: any) => {
     //If is not the same than the secretToken throw ERROR
     if (err) {
       res.statusCode = 403;

@@ -1,198 +1,122 @@
-import { ServerResponse } from "http";
+
 import prisma from "../prisma/prisma";
 
-export const favoriteService = {
-  favorite: async (postId: number, userId: number, res: ServerResponse) => {
+const favoriteService = {
+  newFavorite: async (postId: number, userId: number) => {
     try {
-      if (!userId && !postId) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: "Usuario não informado ou Post não existe",
-            status: res.statusCode,
-          })
-        );
-        return;
+      if (!postId) {
+        throw new Error("Post não existe");
       }
-      const isFavorited = await prisma.favorites.findFirst({
+      if (!userId) {
+        throw new Error("User não existe");
+      }
+
+      const postExists = await prisma.post.findUnique({
         where: {
-          postId: postId,
-          userId: userId,
+          id: postId,
         },
       });
-
-      if (isFavorited) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: "O post já está favoritado!" }));
-        return;
+      if (!postExists) {
+        throw new Error("Post não existe");
       }
-
+      const favoriteAlready = await prisma.favorites.findMany({
+        where: {
+          postId,
+          userId,
+        },
+      });
+      if (favoriteAlready.length >= 1) {
+        throw new Error("Voce já favoritou este post");
+      }
       const favorite = await prisma.favorites.create({
         data: {
-          postId: postId,
-          userId: userId,
+          postId,
+          userId,
         },
       });
 
       return favorite;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
+        return error;
       }
     }
   },
-  deleteFavorite: async (
-    postId: number,
-    userId: number,
-    res: ServerResponse
-  ) => {
+  postWithMoreFavorite: async () => {
     try {
-      if (!userId && !postId) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: "Usuario não informado ou Post não existe",
-            status: res.statusCode,
-          })
-        );
-        return;
+      const postWithMoreFavorites = await prisma.post.findMany({
+        include: {
+          _count: true,
+        },
+
+        orderBy: {
+          favorites: {
+            _count: "desc",
+          },
+        },
+        take: 10, // Limita o número de resultados retornados (por exemplo, 10)
+      });
+      return postWithMoreFavorites;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
       }
-      const isFavorited = await prisma.favorites.findFirst({
+    }
+  },
+  userMostFavoritedPost: async (userId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("Usuario não cadastrado ou não encontrado!");
+      }
+      const post = await prisma.post.findMany({
         where: {
-          postId: postId,
-          userId: userId,
+          favorites: {
+            some: {
+              userId,
+            },
+          },
+        },
+        orderBy: {
+          favorites: {
+            _count: "desc",
+          },
+        },
+        take: 5,
+        include: {
+          _count: {
+            select: { favorites: true },
+          },
+        },
+      });
+      return post;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  removeFavorite: async (postId: number, userId: number) => {
+    try {
+      if (!postId) {
+        throw new Error("Post não foi encontrado!");
+      }
+
+      const favorite = await prisma.favorites.deleteMany({
+        where: {
+          postId,
+          userId,
         },
       });
 
-      if (!isFavorited) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: "O post não está favoritado!" }));
-        return;
+      if (favorite.count < 1) {
+        throw new Error("Favorito não foi encontrado!");
       }
-
-      const favorite = await prisma.favorites.delete({
-        where: {
-          id: isFavorited.id,
-          userId: userId,
-        },
-      });
-
       return favorite;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  getPostWithMoreFavorites: async (res: ServerResponse) => {
-    try {
-      const postsWithLikeCount = await prisma.favorites.groupBy({
-        by: ["postId"],
-        _count: {
-          postId: true,
-        },
-        orderBy: {
-          _count: {
-            postId: "desc",
-          },
-        },
-      });
-
-      const postIds = postsWithLikeCount.map(
-        (favoriteGroup) => favoriteGroup.postId
-      );
-
-      const posts = await prisma.post.findMany({
-        where: {
-          id: {
-            in: postIds,
-          },
-        },
-        orderBy: {
-          id: "asc", // Você pode ordenar como preferir, ou até omitir se não for necessário
-        },
-      });
-      const postWithFavorites = posts.map((post) => {
-        const favoriteCount =
-          postsWithLikeCount.find(
-            (favoriteGroup) => favoriteGroup.postId === post.id
-          )?._count.postId || 0;
-        return { ...post, favoriteCount };
-      });
-
-      return postWithFavorites;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  getPostWithMoreFavoritesUser: async (
-    res: ServerResponse,
-    userId: string | number
-  ) => {
-    try {
-      const userFavorites = await prisma.favorites.groupBy({
-        by: ["postId"],
-        where: {
-          userId: Number(userId), // Filtramos pelos likes do usuário específico
-        },
-        _count: {
-          postId: true,
-        },
-        orderBy: {
-          _count: {
-            postId: "desc",
-          },
-        },
-      });
-      const postIds = userFavorites.map(
-        (favoriteGroup) => favoriteGroup.postId
-      );
-
-      // Buscar os posts completos com os IDs obtidos
-      const posts = await prisma.post.findMany({
-        where: {
-          id: {
-            in: postIds,
-          },
-        },
-        orderBy: {
-          id: "asc",
-        },
-      });
-
-      // Combinar as contagens de likes com os posts
-      const postsWithLikes = posts.map((post) => {
-        const favoriteCount =
-          userFavorites.find(
-            (favoriteGroup) => favoriteGroup.postId === post.id
-          )?._count.postId || 0;
-        return { ...post, favoriteCount };
-      });
-
-      // Retornar os posts com a contagem de likes
-      return postsWithLikes;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
+        return error;
       }
     }
   },
 };
+export default favoriteService;

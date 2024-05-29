@@ -1,89 +1,133 @@
-import { IncomingMessage, Server, ServerResponse } from "http";
-import { likeService } from "../services/likeService";
+import { IncomingMessage, ServerResponse } from "http";
+import likeService from "../services/likeService";
 
-export const likeController = {
-  like: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    postId: number | string
-  ) => {
-    try {
-      //@ts-ignore
-      const userId = req.user.id;
+const likeController = {
+  newLike: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
 
-      if (!userId || !postId) {
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({
-            message: "Post id ou user id não informados",
-            status: res.statusCode,
-          })
+          JSON.stringify({ message: err.message, status: res.statusCode })
         );
         return;
-      }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ postId }] = body;
+          //@ts-ignore
+          const userId = req.user.id;
 
-      const like = await likeService.like(Number(postId), userId, res);
+          const like = await likeService.newLike(Number(postId), userId);
 
-      return like;
+          if (like instanceof Error) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: like.message, status: res.statusCode })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: like, status: res.statusCode }));
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
+  },
+  postWithMoreLike: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const posts = await likeService.postWithMoreLikes();
+
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
+      return;
     } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
+      if (error) {
+        res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
-  removeLike: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    postId: number
-  ) => {
+  userMostLikedPost: async (req: IncomingMessage, res: ServerResponse) => {
     try {
       //@ts-ignore
       const userId = req.user.id;
-
-      const response = await likeService.removeLike(postId, userId, res);
-
-      return response;
+      const posts = await likeService.userMostLikedPost(userId);
+      if (posts instanceof Error) {
+        throw new Error(posts.message);
+      }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
+      return;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
+        res.statusCode = 404;
         res.setHeader("Content-Type", "application/json");
         res.end(JSON.stringify({ message: error, status: res.statusCode }));
         return;
       }
     }
   },
-  postsWithMoreLikes: async (req: IncomingMessage, res: ServerResponse) => {
-    try {
-      const response = await likeService.getPostWithMoreLikes(res);
-
-      return response;
-    } catch (error) {
-      if (error instanceof Error) {
+  removeLike: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        res.end(
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
         return;
-      }
-    }
-  },
-  postsWithMoreLikesUser: async (req: IncomingMessage, res: ServerResponse) => {
-    try {
-      //@ts-ignore
-      const userId = req.user.id;
-      const response = await likeService.getPostWithMoreLikesUser(res, userId);
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          //@ts-ignore
+          const userId = req.user.id;
+          const [{ postId }] = body;
+          const like = await likeService.removeLike(Number(postId), userId);
 
-      return response;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error }));
-        return;
-      }
-    }
+          if (like instanceof Error) {
+            throw new Error(like.message);
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: like, status: res.statusCode }));
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
   },
 };
+
+export default likeController;

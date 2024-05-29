@@ -1,46 +1,35 @@
-import { PrismaClient } from "@prisma/client";
-import { ServerResponse } from "http";
+import prisma from "../prisma/prisma";
 
-const prisma = new PrismaClient();
-
-export const postService = {
-  newPost: async (name: string, imagePath: string | null, authorId: number) => {
+const postService = {
+  newPost: async ({ authorId, name, fanArtUrl }: any) => {
     try {
-      // Only create a post if both name and image path are provided
-      if (name && imagePath) {
-        const post = await prisma.post.create({
-          //@ts-ignore
-          data: {
-            name,
-            fanArtUrl: imagePath,
-            authorId: authorId, // Use the image path as content
-          },
-        });
-        return post;
-      }
+      const post = await prisma.post.create({
+        data: {
+          fanArtUrl,
+          authorId,
+          name,
+        },
+      });
+      return post;
     } catch (error) {
       if (error instanceof Error) {
-        console.error(error);
         return error;
       }
     }
   },
-  postToRemove: async (postId: number, res: ServerResponse) => {
+  deletePost: async (userId: number, postId: number) => {
     try {
-      //Verificar se o post existe
       const post = await prisma.post.findUnique({
         where: {
           id: postId,
         },
       });
-      console.log(post);
       if (!post) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: "Post não existe", status: res.statusCode })
-        );
-        return;
+        throw new Error("Post não encontrado");
+      }
+
+      if (post.authorId !== userId) {
+        throw new Error("Post não pode ser excluido, você não é o autor");
       }
 
       await prisma.likes.deleteMany({
@@ -54,47 +43,60 @@ export const postService = {
           postId: post.id,
         },
       });
-
-      const postDeleted = await prisma.post.delete({
+      const deletedPost = await prisma.post.delete({
         where: {
-          id: post.id,
+          id: postId,
         },
       });
 
-      return postDeleted;
+      return deletedPost;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        console.error(error);
-        return;
+        return error.message;
       }
     }
   },
-  getPosts: async () => {
+  getPostsById: async (postId: number) => {
     try {
-      const posts = await prisma.post.findMany({
-        orderBy: [
-          {
-            id: "asc",
-          },
-        ],
-        select: {
-          fanArtUrl: true, // Seleciona o atributo 'content'
-          author: {
-            select: {
-              name: true,
-            },
-          }, // Seleciona o atributo 'author' do relacionamento
+      if (!postId) {
+        throw new Error("Por favor informe o ID do Post");
+      }
+      const post = await prisma.post.findUnique({
+        where: {
+          id: postId,
         },
       });
+      if (!post) {
+        throw new Error("Post não existe!");
+      }
+      return post;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        return error.message;
+      }
+    }
+  },
+  getAllPosts: async () => {
+    try {
+      const posts = await prisma.post.findMany({
+        include: {
+          author: { select: { name: true } },
+        },
+        take: 10,
+      });
+
+      if (!posts) {
+        throw new Error("Nenhumo post foi encontrado!");
+      }
       return posts;
     } catch (error) {
       if (error instanceof Error) {
-        console.error(error);
-        return error;
+        console.log(error);
+        return error.message;
       }
     }
   },
 };
+
+export default postService;

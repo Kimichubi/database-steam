@@ -1,122 +1,105 @@
-import { userService } from "../services/userService";
-import { ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
+import { User } from "../interface/user";
+import userService from "../services/userService";
+import { error } from "console";
 
-export const userController = {
-  register: async (
-    body: { email: string; password: string; name: string },
-    res: ServerResponse
-  ) => {
-    const { email, password, name } = body;
+const userController = {
+  register: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
 
-    try {
-      const user = await userService.register({ email, name, password }, res);
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ name, email, password }] = body;
+          if (!name) {
+            throw new Error("Por favor informe o nome");
+          } else if (!email) {
+            throw new Error("Por favor informe o email");
+          } else if (!password) {
+            throw new Error("Por favor informe a senha");
+          }
+          const user = await userService.register({ name, email, password });
 
-      if (user) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({
-            message: `Cadastro bem sucedido. Bem vindo ${name}`,
-            status: res.statusCode,
-          })
-        );
-        return;
-      }
+          if (user instanceof Error) {
+            //@ts-ignore
+            throw new Error(user.message);
+          }
+          console.log(name, email, password);
 
-      return;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error);
-        return error;
-      }
-    }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: "Usuario criado com sucesso",
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+          }
+        }
+      });
   },
-  login: async (
-    body: { email: string; password: string },
-    res: ServerResponse
-  ): Promise<any> => {
-    try {
-      const { email, password } = body;
-      const token = await userService.login({ email, password }, res);
-      if (token) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: token, status: res.statusCode }));
-        return;
-      }
-
-      return;
-    } catch (error) {
-      if (error instanceof Error) {
-        console.log(error);
-        return;
-      }
-    }
-  },
-  updatePassword: async (
-    userId: number,
-    currentPassword: string,
-    newPassword: string,
-    res: ServerResponse
-  ) => {
-    try {
-      const response = await userService.updatePassword(
-        userId,
-        currentPassword,
-        newPassword,
-        res
-      );
-
-      if (response) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: response, status: res.statusCode }));
-        return;
-      }
-      return;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  updateUser: async (
-    email: string,
-    name: string,
-    userId: number,
-    res: ServerResponse
-  ) => {
-    try {
-      const response = await userService.updateUser(email, name, userId, res);
-
-      if (response) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: response, status: res.statusCode }));
-        return;
-      }
-      return;
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: error, status: res.statusCode }));
-        return;
-      }
-    }
-  },
-  getUser: async (id: number) => {
-    try {
-      const user = await userService.getUserInfo(id);
-      return user;
-    } catch (error) {
-      if (error) {
-        console.error(error);
-        return error;
-      }
-    }
+  login: (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+          return;
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ email, password }] = body;
+          const token = await userService.login({ email, password });
+          if (token instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: token.message, status: res.statusCode })
+            );
+            return;
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: token, status: res.statusCode }));
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
   },
 };
+
+export default userController;
