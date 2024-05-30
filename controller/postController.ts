@@ -174,6 +174,27 @@ const postController = {
       }
     }
   },
+  getRecentPosts: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await postService.getMostRecentlyPosts();
+
+      if (response) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: response, status: res.statusCode }));
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
 };
 
 export default postController;

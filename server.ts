@@ -109,6 +109,9 @@ const server = createServer(async (req, res) => {
         } else if (url === "/user/infos") {
           await userController.infos(req, res);
           return;
+        } else if (url === "/get/posts/recently") {
+          await postController.getRecentPosts(req, res);
+          return;
         }
       }
       //DELETE with TOKEN

@@ -82,6 +82,31 @@ const postService = {
       const posts = await prisma.post.findMany({
         include: {
           author: { select: { name: true } },
+          _count: true,
+        },
+        take: 10,
+      });
+
+      if (!posts) {
+        throw new Error("Nenhumo post foi encontrado!");
+      }
+      return posts;
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(error);
+        return error.message;
+      }
+    }
+  },
+  getMostRecentlyPosts: async () => {
+    try {
+      const posts = await prisma.post.findMany({
+        orderBy: {
+          id: "desc",
+        },
+        include: {
+          author: { select: { name: true } },
+          _count: true,
         },
         take: 10,
       });
