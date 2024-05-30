@@ -6,10 +6,11 @@ import path from "path";
 
 const postController = {
   newPost: async (req: IncomingMessage, res: ServerResponse) => {
-    const form = formidable({});
+    const form = formidable({ multiples: true });
 
     try {
       form.parse(req, async (err, fields, files) => {
+        console.log(fields);
         if (err) {
           console.error(err);
           res.writeHead(500, { "Content-Type": "application/json" });

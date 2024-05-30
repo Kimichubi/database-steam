@@ -62,6 +62,27 @@ const userService = {
       }
     }
   },
+  infos: async (userId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("Usuario não cadastrado!");
+      }
+      const user = await prisma.users.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          name: true,
+          email: true,
+        },
+      });
+      return user;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default userService;

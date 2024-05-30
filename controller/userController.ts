@@ -100,6 +100,29 @@ const userController = {
         }
       });
   },
+  infos: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+      const user = await userService.infos(userId);
+      if (user instanceof Error) {
+        throw new Error(user.message);
+      }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: user, status: res.statusCode }));
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
 };
 
 export default userController;

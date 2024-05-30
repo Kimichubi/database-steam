@@ -106,6 +106,9 @@ const server = createServer(async (req, res) => {
         } else if (url === "/posts/user/favorited") {
           await favoriteController.userMostFavoritedPost(req, res);
           return;
+        } else if (url === "/user/infos") {
+          await userController.infos(req, res);
+          return;
         }
       }
       //DELETE with TOKEN
