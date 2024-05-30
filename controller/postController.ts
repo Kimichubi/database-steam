@@ -39,9 +39,9 @@ const postController = {
         } //@ts-ignore
         const newFileName = fanArtFile[0].newFilename;
         const originalName = fanArtFile[0].originalFilename;
-        const newPath = path.join(uploadDir, newFileName! + originalName);
-        console.log(newPath, oldPath);
-        fs.rename(oldPath, newPath, async (err) => {
+        const newPath = path.join(uploadDir, newFileName! + originalName!);
+
+        fs.rename(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
           if (err) {
             console.error(err);
             res.writeHead(500, { "Content-Type": "application/json" });
@@ -51,7 +51,10 @@ const postController = {
             return;
           }
 
-          const fanArtUrl = `/uploads/${newFileName}${originalName}`;
+          const fanArtUrl = `/uploads/${newFileName}${originalName!.replace(
+            /\s+/g,
+            ""
+          )}`;
           //@ts-ignore
           const name = fields.name[0];
           //@ts-ignore
