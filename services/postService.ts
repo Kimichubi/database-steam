@@ -1,13 +1,14 @@
 import prisma from "../prisma/prisma";
 
 const postService = {
-  newPost: async ({ authorId, name, fanArtUrl }: any) => {
+  newPost: async ({ authorId, name, fanArtUrl, categoryId }: any) => {
     try {
       const post = await prisma.post.create({
         data: {
           fanArtUrl,
           authorId,
           name,
+          categoryId,
         },
       });
       return post;

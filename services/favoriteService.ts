@@ -1,7 +1,7 @@
 import prisma from "../prisma/prisma";
 
 const favoriteService = {
-  newFavorite: async (postId: number, userId: number) => {
+  newFavorite: async (postId: number, userId: number, categoryId: number) => {
     try {
       if (!postId) {
         throw new Error("Post não existe");
@@ -31,6 +31,7 @@ const favoriteService = {
         data: {
           postId,
           userId,
+          categoryId,
         },
       });
 
@@ -61,6 +62,27 @@ const favoriteService = {
         take: 10, // Limita o número de resultados retornados (por exemplo, 10)
       });
       return postWithMoreFavorites;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  categoryWithMoreFavorite: async () => {
+    try {
+      const categoryWithMoreFavorite = await prisma.category.findMany({
+        include: {
+          _count: true,
+        },
+
+        orderBy: {
+          favorites: {
+            _count: "desc",
+          },
+        },
+        take: 10, // Limita o número de resultados retornados (por exemplo, 10)
+      });
+      return categoryWithMoreFavorite;
     } catch (error) {
       if (error instanceof Error) {
         return error;
@@ -99,7 +121,11 @@ const favoriteService = {
       }
     }
   },
-  removeFavorite: async (postId: number, userId: number) => {
+  removeFavorite: async (
+    postId: number,
+    userId: number,
+    categoryId: number
+  ) => {
     try {
       if (!postId) {
         throw new Error("Post não foi encontrado!");
@@ -109,6 +135,7 @@ const favoriteService = {
         where: {
           postId,
           userId,
+          categoryId,
         },
       });
 

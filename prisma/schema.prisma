@@ -15,16 +15,31 @@ datasource db {
 }
 
 model users {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String   
-  posts     post[]
-  favorites favorites[]
-  likes     likes[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id                 Int        @id @default(autoincrement())
+  email              String     @unique
+  name               String
+  password           String   
+  posts              post[]
+  favorites          favorites[]
+  likes              likes[]
+  followingCategories category[]
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @default(now())
 }
+
+model category {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  imageUrl     String
+  posts     post[]
+  favorites favorites[]  
+  likes     likes[]
+  followers users[]    // Alterado de followingCategorys para followers
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+}
+
+
 
 model post {
   id        Int      @id @default(autoincrement())
@@ -32,6 +47,8 @@ model post {
   fanArtUrl   String @unique
   author    users    @relation(fields: [authorId], references: [id])
   authorId  Int
+  category category @relation(fields: [categoryId] , references: [id])
+  categoryId Int   
   favorites favorites[]  
   likes     likes[]
   createdAt DateTime @default(now())
@@ -42,21 +59,25 @@ model favorites {
   id        Int      @id @default(autoincrement())
   user      users    @relation(fields: [userId], references: [id])
   post      post     @relation(fields: [postId], references: [id])
+  category      category     @relation(fields: [categoryId], references: [id])
+  categoryId Int
   userId    Int
   postId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+  @@unique([userId, postId]) 
 }
 
 model likes {
   id        Int      @id @default(autoincrement())
   user      users    @relation(fields: [userId], references: [id])
   post      post     @relation(fields: [postId], references: [id])
+  category      category     @relation(fields: [categoryId], references: [id])
+  categoryId Int
   userId    Int
   postId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-
   @@unique([userId, postId]) // Adiciona unicidade na combinação de userId e postId
 }
 

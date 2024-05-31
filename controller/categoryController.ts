@@ -1,11 +1,10 @@
 import { IncomingMessage, ServerResponse } from "http";
-import postService from "../services/postService";
+import categoryService from "../services/categoryService";
 import formidable from "formidable";
-import fs from "fs";
 import path from "path";
-
-const postController = {
-  newPost: async (req: IncomingMessage, res: ServerResponse) => {
+import fs from "fs";
+const categoryController = {
+  newCategory: async (req: IncomingMessage, res: ServerResponse) => {
     const form = formidable({ multiples: true });
 
     try {
@@ -22,8 +21,8 @@ const postController = {
           return;
         }
 
-        const fanArtFile = files.fanArtUrl;
-        if (!fanArtFile) {
+        const imagesUrl = files.imageUrl;
+        if (!imagesUrl) {
           res.writeHead(400, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({ success: false, message: "No file uploaded" })
@@ -31,13 +30,13 @@ const postController = {
           return;
         }
         //@ts-ignore
-        const oldPath = fanArtFile[0].filepath;
-        const uploadDir = path.join(__dirname, "../uploads");
+        const oldPath = imagesUrl[0].filepath;
+        const uploadDir = path.join(__dirname, "../categoryImages");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         } //@ts-ignore
-        const newFileName = fanArtFile[0].newFilename;
-        const originalName = fanArtFile[0].originalFilename;
+        const newFileName = imagesUrl[0].newFilename;
+        const originalName = imagesUrl[0].originalFilename;
         const newPath = path.join(uploadDir, newFileName! + originalName!);
 
         fs.rename(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
@@ -50,24 +49,17 @@ const postController = {
             return;
           }
 
-          const fanArtUrl = `/uploads/${newFileName}${originalName!.replace(
+          const imagesUrl = `/categoryImages/${newFileName}${originalName!.replace(
             /\s+/g,
             ""
           )}`;
           //@ts-ignore
           const name = fields.name[0];
           //@ts-ignore
-          const authorId = req.user.id;
-          //@ts-ignore
-          const categoryId = fields.categoryId[0];
+
           // Salvar as URLs dos arquivos no banco de dados
-          const post = await postService.newPost({
-            authorId,
-            name,
-            fanArtUrl,
-            categoryId,
-          });
-          console.log(post);
+          const category = await categoryService.newCategory(name, imagesUrl);
+          console.log(category);
 
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
@@ -86,8 +78,30 @@ const postController = {
       );
     }
   },
-  deletePost: async (req: IncomingMessage, res: ServerResponse) => {
+  getAllCategorys: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await categoryService.getAllCategorys();
+
+      if (response) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: response, status: res.statusCode }));
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
+  getOneCategory: async (req: IncomingMessage, res: ServerResponse) => {
     let body: any = [];
+
     req
       .on("error", (err) => {
         res.statusCode = 400;
@@ -102,48 +116,29 @@ const postController = {
       })
       .on("end", async () => {
         try {
+          const [{ categoryId }] = body;
           //@ts-ignore
           const userId = req.user.id;
-          const [{ postId }] = body;
 
-          const post = await postService.deletePost(userId, Number(postId));
+          const response = await categoryService.getOneCategory(categoryId);
 
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ message: post, status: res.statusCode }));
-        } catch (error) {
-          if (error instanceof Error) {
+          if (response instanceof Error) {
             res.statusCode = 404;
             res.setHeader("Content-Type", "application/json");
             res.end(
-              JSON.stringify({ message: error.message, status: res.statusCode })
+              JSON.stringify({
+                message: response.message,
+                status: res.statusCode,
+              })
             );
+            return;
           }
-        }
-      });
-  },
-  getPostsById: async (req: IncomingMessage, res: ServerResponse) => {
-    let body: any = [];
-    req
-      .on("error", (err) => {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: err.message, status: res.statusCode })
-        );
-        return;
-      })
-      .on("data", (chunk) => {
-        body.push(JSON.parse(chunk));
-      })
-      .on("end", async () => {
-        try {
-          const [{ postId }] = body;
 
-          const post = await postService.getPostsById(Number(postId));
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ message: post, status: res.statusCode }));
+          res.end(
+            JSON.stringify({ message: response, status: res.statusCode })
+          );
           return;
         } catch (error) {
           if (error instanceof Error) {
@@ -155,51 +150,62 @@ const postController = {
             return;
           }
         }
-        return;
       });
   },
-  getAllPosts: async (req: IncomingMessage, res: ServerResponse) => {
-    try {
-      const response = await postService.getAllPosts();
+  followCategory: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
 
-      if (response) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: response, status: res.statusCode }));
-        return;
-      }
-    } catch (error) {
-      if (error instanceof Error) {
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({ message: error.message, status: res.statusCode })
+          JSON.stringify({ message: err.message, status: res.statusCode })
         );
         return;
-      }
-    }
-  },
-  getRecentPosts: async (req: IncomingMessage, res: ServerResponse) => {
-    try {
-      const response = await postService.getMostRecentlyPosts();
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId }] = body;
+          //@ts-ignore
+          const userId = req.user.id;
 
-      if (response) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        res.end(JSON.stringify({ message: response, status: res.statusCode }));
-        return;
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: error.message, status: res.statusCode })
-        );
-        return;
-      }
-    }
+          const follow = await categoryService.followCategory(
+            userId,
+            categoryId
+          );
+
+          if (follow instanceof Error) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: follow.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: follow, status: res.statusCode }));
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+      });
   },
 };
 
-export default postController;
+export default categoryController;

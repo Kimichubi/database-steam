@@ -19,11 +19,15 @@ const likeController = {
       })
       .on("end", async () => {
         try {
-          const [{ postId }] = body;
+          const [{ postId, categoryId }] = body;
           //@ts-ignore
           const userId = req.user.id;
 
-          const like = await likeService.newLike(Number(postId), userId);
+          const like = await likeService.newLike(
+            Number(postId),
+            userId,
+            Number(categoryId)
+          );
 
           if (like instanceof Error) {
             res.statusCode = 404;
@@ -106,8 +110,8 @@ const likeController = {
         try {
           //@ts-ignore
           const userId = req.user.id;
-          const [{ postId }] = body;
-          const like = await likeService.removeLike(Number(postId), userId);
+          const [{ postId ,categoryId}] = body;
+          const like = await likeService.removeLike(Number(postId), userId,(Number(categoryId)))
 
           if (like instanceof Error) {
             throw new Error(like.message);

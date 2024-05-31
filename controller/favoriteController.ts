@@ -19,13 +19,14 @@ const favoriteController = {
       })
       .on("end", async () => {
         try {
-          const [{ postId }] = body;
+          const [{ postId, categoryId }] = body;
           //@ts-ignore
           const userId = req.user.id;
 
           const favorite = await favoriteService.newFavorite(
             Number(postId),
-            userId
+            userId,
+            Number(categoryId)
           );
 
           if (favorite instanceof Error) {
@@ -114,10 +115,11 @@ const favoriteController = {
         try {
           //@ts-ignore
           const userId = req.user.id;
-          const [{ postId }] = body;
+          const [{ postId, categoryId }] = body;
           const favorite = await favoriteService.removeFavorite(
             Number(postId),
-            userId
+            userId,
+            Number(categoryId)
           );
 
           if (favorite instanceof Error) {

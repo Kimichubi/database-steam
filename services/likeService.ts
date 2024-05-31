@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import prisma from "../prisma/prisma";
 
 const likeService = {
-  newLike: async (postId: number, userId: number) => {
+  newLike: async (postId: number, userId: number, categoryId: number) => {
     try {
       if (!postId) {
         throw new Error("Post não existe");
@@ -32,6 +32,7 @@ const likeService = {
         data: {
           postId,
           userId,
+          categoryId,
         },
       });
 
@@ -68,6 +69,28 @@ const likeService = {
       }
     }
   },
+  categoryWithMoreLikes: async () => {
+    try {
+      const categoryWithMoreLikes = await prisma.category.findMany({
+        include: {
+          _count: true,
+        },
+
+        orderBy: {
+          likes: {
+            _count: "desc",
+          },
+        },
+        take: 10, // Limita o número de resultados retornados (por exemplo, 10)
+      });
+      return categoryWithMoreLikes;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+
   userMostLikedPost: async (userId: number) => {
     try {
       if (!userId) {
@@ -100,7 +123,7 @@ const likeService = {
       }
     }
   },
-  removeLike: async (postId: number, userId: number) => {
+  removeLike: async (postId: number, userId: number, categoryId: number) => {
     try {
       if (!postId) {
         throw new Error("Post não foi encontrado!");
@@ -110,6 +133,7 @@ const likeService = {
         where: {
           postId,
           userId,
+          categoryId,
         },
       });
 
