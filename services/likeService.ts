@@ -47,6 +47,11 @@ const likeService = {
       const postsWithMoreLikes = await prisma.post.findMany({
         include: {
           _count: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
         },
 
         orderBy: {

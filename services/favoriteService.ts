@@ -1,4 +1,3 @@
-
 import prisma from "../prisma/prisma";
 
 const favoriteService = {
@@ -47,6 +46,11 @@ const favoriteService = {
       const postWithMoreFavorites = await prisma.post.findMany({
         include: {
           _count: true,
+          author: {
+            select: {
+              name: true,
+            },
+          },
         },
 
         orderBy: {
