@@ -108,6 +108,9 @@ const server = createServer(async (req, res) => {
         } else if (url === "/category/follow") {
           await categoryController.followCategory(req, res);
           return;
+        } else if (url === "/user/isFollowing") {
+          await userController.userFollowingOneCategory(req, res);
+          return;
         }
         return;
       }
@@ -169,6 +172,9 @@ const server = createServer(async (req, res) => {
           return;
         } else if (url === "/category/delete") {
           await categoryController.deleteCategory(req, res);
+        }else if(url === "/user/unfollow"){
+          await userController.unFollowCategory(req,res)
+          return
         }
         return;
       }

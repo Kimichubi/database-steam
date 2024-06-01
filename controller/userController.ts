@@ -153,6 +153,119 @@ const userController = {
       }
     }
   },
+  userFollowingOneCategory: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ) => {
+    let body: any = [];
+
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId }] = body;
+          if (!categoryId) {
+            throw new Error("Por favor informe o category");
+          }
+          //@ts-ignore
+          const userId = req.user.id;
+          const userIsFollowing = await userService.userFollowingOneCategory(
+            userId,
+            Number(categoryId)
+          );
+
+          if (userIsFollowing instanceof Error) {
+            //@ts-ignore
+            throw new Error(userIsFollowing.message);
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: userIsFollowing,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+          }
+        }
+      });
+  },
+  unFollowCategory: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId }] = body;
+          if (!categoryId) {
+            throw new Error("Por favor informe o category");
+          }
+          //@ts-ignore
+          const userId = req.user.id;
+          const unfollow = await userService.unFollowCategory(
+            userId,
+            Number(categoryId)
+          );
+
+          if (unfollow instanceof Error) {
+            //@ts-ignore
+            throw new Error(unfollow.message);
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: unfollow,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+          }
+        }
+      });
+  },
 };
 
 export default userController;

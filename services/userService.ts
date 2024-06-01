@@ -115,6 +115,69 @@ const userService = {
       }
     }
   },
+  userFollowingOneCategory: async (userId: number, categoryId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("User não informado");
+      } else if (!categoryId) {
+        throw new Error("Category não informado");
+      }
+      const userIsFollowing = await prisma.category.findUnique({
+        where: {
+          id: categoryId,
+        },
+        select: {
+          followers: {
+            where: {
+              id: userId,
+            },
+            select: {
+              name: true,
+            },
+          },
+        },
+      });
+      if (userIsFollowing?.followers.length! < 1) {
+        throw new Error("Categoria não seguida");
+      }
+      return userIsFollowing;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  unFollowCategory: async (userId: number, categoryId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("Usuario não informado!");
+      }
+      if (!categoryId) {
+        throw new Error("Categoria não informada!");
+      }
+
+      const unFollow = await prisma.users.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          followingCategories: {
+            disconnect: {
+              id: categoryId,
+            },
+          },
+        },
+        select: {
+          name: true,
+        },
+      });
+      return unFollow;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default userService;
