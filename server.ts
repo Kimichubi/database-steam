@@ -102,7 +102,7 @@ const server = createServer(async (req, res) => {
           return;
         } else if (url === "/new/category") {
           await categoryController.newCategory(req, res);
-        } else if (url === "/category/id") {
+        } else if (url === "/category/getOne") {
           await categoryController.getOneCategory(req, res);
           return;
         } else if (url === "/category/follow") {
@@ -148,6 +148,11 @@ const server = createServer(async (req, res) => {
           //@ts-ignore
           const page = parseInt(queryParams.get("page")) || 1;
           await categoryController.getAllCategorys(req, res, page);
+          return;
+        } else if (pathName === "/user/following" && queryParams.has("page")) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          await userController.folloWingCategory(req, res, page);
           return;
         }
       }

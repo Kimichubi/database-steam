@@ -83,6 +83,38 @@ const userService = {
       }
     }
   },
+  getFollowingCategorys: async (userId: number, page: number) => {
+    const take = 10;
+    const skip = (page - 1) * take;
+    try {
+      if (!userId) {
+        throw new Error("userId não informado");
+      }
+      const userFollowing = await prisma.users.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          followingCategories: {
+            take,
+            skip,
+            select: {
+              name: true,
+              id: true,
+              _count: true,
+              imageUrl: true,
+            },
+          },
+        },
+      });
+
+      return userFollowing;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default userService;

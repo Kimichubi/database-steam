@@ -78,32 +78,6 @@ const categoryService = {
     }
   },
 
-  getFollowingCategorys: async (userId: number) => {
-    try {
-      const category = await prisma.category.findMany({
-        select: {
-          id: true,
-          name: true,
-          _count: true,
-          posts: {
-            select: {
-              author: true,
-              _count: true,
-              fanArtUrl: true,
-            },
-          },
-        },
-
-        take: 10,
-      });
-
-      return category;
-    } catch (error) {
-      if (error instanceof Error) {
-        return error;
-      }
-    }
-  },
   getOneCategory: async (categoryId: number) => {
     try {
       if (!categoryId) {
@@ -114,8 +88,27 @@ const categoryService = {
           id: categoryId,
         },
         select: {
+          id: true,
           name: true,
-          posts: true,
+          imageUrl: true,
+          posts: {
+            select: {
+              _count: {
+                select: {
+                  likes: true,
+                  favorites: true,
+                },
+              },
+              id: true,
+              author: {
+                select: {
+                  name: true,
+                },
+              },
+              name: true,
+              fanArtUrl: true,
+            },
+          },
           _count: true,
         },
       });
