@@ -1,7 +1,7 @@
 import prisma from "../prisma/prisma";
 
 const categoryService = {
-  newCategory: async (name: string, image: string) => {
+  newCategory: async (name: string, imageUrl: string) => {
     try {
       if (!name) {
         throw new Error("Name não informado!");
@@ -10,6 +10,7 @@ const categoryService = {
       const category = await prisma.category.create({
         data: {
           name,
+          imageUrl,
         },
       });
 
@@ -25,17 +26,27 @@ const categoryService = {
       if (!categoryId) {
         throw new Error("categoryId não informado!");
       }
-
-      const category = await prisma.category.delete({
+      await prisma.likes.deleteMany({
         where: {
-          id: categoryId,
+          categoryId,
         },
       });
+      await prisma.favorites.deleteMany({
+        where: {
+          categoryId,
+        },
+      });
+
       await prisma.post.deleteMany({
         where: {
           categoryId,
         },
       });
+      const category = await prisma.category.delete({
+        where: {
+          id: categoryId,
+        },
+      });
       return category;
     } catch (error) {
       if (error instanceof Error) {
@@ -43,23 +54,20 @@ const categoryService = {
       }
     }
   },
-  getAllCategorys: async () => {
+  getAllCategorys: async (page: number) => {
     try {
+      const take = 10;
+      const skip = (page - 1) * take;
+
       const category = await prisma.category.findMany({
         select: {
           id: true,
           name: true,
+          imageUrl: true,
           _count: true,
-          posts: {
-            select: {
-              author: true,
-              _count: true,
-              fanArtUrl: true,
-            },
-          },
         },
-
-        take: 10,
+        take,
+        skip,
       });
 
       return category;
@@ -69,6 +77,7 @@ const categoryService = {
       }
     }
   },
+
   getFollowingCategorys: async (userId: number) => {
     try {
       const category = await prisma.category.findMany({
@@ -103,6 +112,11 @@ const categoryService = {
       const category = await prisma.category.findUnique({
         where: {
           id: categoryId,
+        },
+        select: {
+          name: true,
+          posts: true,
+          _count: true,
         },
       });
 

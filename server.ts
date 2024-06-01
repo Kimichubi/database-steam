@@ -7,11 +7,14 @@ import path from "path";
 import fs from "fs";
 import likeController from "./controller/likeController";
 import favoriteController from "./controller/favoriteController";
+import categoryController from "./controller/categoryController";
+import url from "url";
 const hostname = "localhost";
 const port = 8080;
 
 const server = createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
+
   const { method, url } = req;
   //POST  no TOKEN
   if (method === "POST") {
@@ -55,11 +58,32 @@ const server = createServer(async (req, res) => {
     } else if (url === "/posts/favoriteds") {
       await favoriteController.postWithMoreFavorites(req, res);
       return;
+    } else if (url?.startsWith("/categoryImages/")) {
+      const filename = url.split("/").pop();
+      //@ts-ignore
+      const filePath = path.join(__dirname, "/categoryImages", filename);
+
+      //@ts-ignore
+      fs.access(filePath, (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          //@ts-ignore
+          const fileStream = fs.createReadStream(filePath);
+          fileStream.pipe(res);
+        }
+      });
+      return;
     }
   }
 
   //TOKEN
   cors()(req, res, async () => {
+    //This is the way to searchParams in NodeJs
+    const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
+    const pathName = parsedUrl.pathname;
+    const queryParams = parsedUrl.searchParams;
+
     const { method, url } = req;
     verifyToken(req, res, async () => {
       //POST with TOKEN
@@ -75,6 +99,14 @@ const server = createServer(async (req, res) => {
           return;
         } else if (url === "/favorite") {
           await favoriteController.newFavorite(req, res);
+          return;
+        } else if (url === "/new/category") {
+          await categoryController.newCategory(req, res);
+        } else if (url === "/category/id") {
+          await categoryController.getOneCategory(req, res);
+          return;
+        } else if (url === "/category/follow") {
+          await categoryController.followCategory(req, res);
           return;
         }
         return;
@@ -112,6 +144,11 @@ const server = createServer(async (req, res) => {
         } else if (url === "/get/posts/recently") {
           await postController.getRecentPosts(req, res);
           return;
+        } else if (pathName === "/category/all" && queryParams.has("page")) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          await categoryController.getAllCategorys(req, res, page);
+          return;
         }
       }
       //DELETE with TOKEN
@@ -125,6 +162,8 @@ const server = createServer(async (req, res) => {
         } else if (url === "/favorite/delete") {
           await favoriteController.removeFavorite(req, res);
           return;
+        } else if (url === "/category/delete") {
+          await categoryController.deleteCategory(req, res);
         }
         return;
       }

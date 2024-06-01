@@ -60,30 +60,48 @@ const postController = {
           const authorId = req.user.id;
           //@ts-ignore
           const categoryId = fields.categoryId[0];
+          //@ts-ignore
+          const categoryToNumber = Number(categoryId);
           // Salvar as URLs dos arquivos no banco de dados
-          const post = await postService.newPost({
+
+          const post = await postService.newPost(
             authorId,
             name,
             fanArtUrl,
-            categoryId,
-          });
-          console.log(post);
-
+            //@ts-ignore
+            categoryToNumber
+          );
+          if (post instanceof Error) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message: post.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
-              success: true,
-              message: "Post created successfully",
+              message: post,
+              status: res.statusCode,
             })
           );
+          return;
         });
       });
     } catch (err) {
-      console.error(err);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({ success: false, message: "Failed to create post" })
-      );
+      if (err instanceof Error) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            message: err.message,
+            status: res.statusCode,
+          })
+        );
+        return;
+      }
     }
   },
   deletePost: async (req: IncomingMessage, res: ServerResponse) => {

@@ -1,8 +1,22 @@
 import prisma from "../prisma/prisma";
 
 const postService = {
-  newPost: async ({ authorId, name, fanArtUrl, categoryId }: any) => {
+  newPost: async (
+    authorId: number,
+    name: string,
+    fanArtUrl: string,
+    categoryId: number
+  ) => {
     try {
+      if (!categoryId) {
+        throw new Error("Category não informado!");
+      } else if (!name) {
+        throw new Error("Nome não informado!");
+      } else if (!fanArtUrl) {
+        throw new Error("Url não informado!");
+      } else if (!authorId) {
+        throw new Error("Author não informado!");
+      }
       const post = await prisma.post.create({
         data: {
           fanArtUrl,
@@ -83,6 +97,7 @@ const postService = {
       const posts = await prisma.post.findMany({
         include: {
           author: { select: { name: true } },
+          category: { select: { name: true } },
           _count: true,
         },
         take: 10,
