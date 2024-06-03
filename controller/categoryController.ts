@@ -290,6 +290,38 @@ const categoryController = {
         }
       });
   },
+  searchCategoryParams: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    query: string,
+    page: number
+  ) => {
+    try {
+      //@ts-ignore
+      const response = await categoryService.searchCategory(query, page);
+      if (response instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: response.message, status: res.statusCode })
+        );
+        return;
+      }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: response, status: res.statusCode }));
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
 };
 
 export default categoryController;

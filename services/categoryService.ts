@@ -156,5 +156,32 @@ const categoryService = {
       }
     }
   },
+  searchCategory: async (query: string, page: number) => {
+    try {
+      if (!query) {
+        throw new Error("Query não informada!");
+      }
+      const take = 6;
+      const skip = (page - 1) * take;
+      const searchCategoryParams = await prisma.category.findMany({
+        where: {
+          name: {
+            contains: query,
+            mode: "insensitive",
+          },
+        },
+        include: {
+          _count: true,
+        },
+        take,
+        skip,
+      });
+      return searchCategoryParams;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 export default categoryService;

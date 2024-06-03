@@ -147,6 +147,34 @@ const postService = {
       }
     }
   },
+  searchPost: async (query: string, page: number, categoryId: number) => {
+    try {
+      if (!query) {
+        throw new Error("Query não informada!");
+      }
+      const take = 6;
+      const skip = (page - 1) * take;
+      const searchPostParams = await prisma.post.findMany({
+        where: {
+          categoryId,
+          name: {
+            contains: query,
+            mode: "insensitive",
+          },
+        },
+        include: {
+          _count: true,
+        },
+        take,
+        skip,
+      });
+      return searchPostParams;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default postService;

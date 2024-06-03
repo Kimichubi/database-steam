@@ -107,7 +107,6 @@ const server = createServer(async (req, res) => {
           const page = parseInt(queryParams.get("page")) || 1;
           await categoryController.getOneCategory(req, res, page);
           return;
-          
         } else if (url === "/category/follow") {
           await categoryController.followCategory(req, res);
           return;
@@ -128,6 +127,17 @@ const server = createServer(async (req, res) => {
           return;
         } else if (url === "/user/favorited/posts") {
           await userController.userFavoritedPost(req, res);
+          return;
+        } else if (
+          pathName === "/post/search" &&
+          queryParams.has("page") &&
+          queryParams.has("query")
+        ) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          //@ts-ignore
+          const query = queryParams.get("query")?.toString();
+          await postController.searchPostParams(req, res, query!, page);
           return;
         }
         return;
@@ -185,6 +195,17 @@ const server = createServer(async (req, res) => {
           //@ts-ignore
           const page = parseInt(queryParams.get("page")) || 1;
           await userController.folloWingCategory(req, res, page);
+          return;
+        } else if (
+          pathName === "/category/search" &&
+          queryParams.has("page") &&
+          queryParams.has("query")
+        ) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          //@ts-ignore
+          const query = queryParams.get("query")?.toString();
+          await categoryController.searchCategoryParams(req, res, query!, page);
           return;
         }
       }

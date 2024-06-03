@@ -218,6 +218,53 @@ const postController = {
       }
     }
   },
+  searchPostParams: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    query: string,
+    page: number
+  ) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
+        return;
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId }] = body;
+
+          const response = await postService.searchPost(
+            query,
+            page,
+            categoryId
+          );
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: response, status: res.statusCode })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+        return;
+      });
+  },
 };
 
 export default postController;
