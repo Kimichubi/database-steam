@@ -90,11 +90,13 @@ const likeService = {
     }
   },
 
-  userMostLikedPost: async (userId: number) => {
+  userMostLikedPost: async (userId: number, page: number) => {
     try {
       if (!userId) {
         throw new Error("Usuario não cadastrado ou não encontrado!");
       }
+      const take = 6;
+      const skip = (page - 1) * take;
       const post = await prisma.post.findMany({
         where: {
           likes: {
@@ -108,12 +110,14 @@ const likeService = {
             _count: "desc",
           },
         },
-        take: 5,
+
         include: {
           _count: {
-            select: { likes: true },
+            select: { likes: true, favorites: true },
           },
         },
+        take,
+        skip,
       });
       return post;
     } catch (error) {

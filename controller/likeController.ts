@@ -71,11 +71,15 @@ const likeController = {
       }
     }
   },
-  userMostLikedPost: async (req: IncomingMessage, res: ServerResponse) => {
+  userMostLikedPost: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    page: number
+  ) => {
     try {
       //@ts-ignore
       const userId = req.user.id;
-      const posts = await likeService.userMostLikedPost(userId);
+      const posts = await likeService.userMostLikedPost(userId, page);
       if (posts instanceof Error) {
         throw new Error(posts.message);
       }
@@ -110,8 +114,12 @@ const likeController = {
         try {
           //@ts-ignore
           const userId = req.user.id;
-          const [{ postId ,categoryId}] = body;
-          const like = await likeService.removeLike(Number(postId), userId,(Number(categoryId)))
+          const [{ postId, categoryId }] = body;
+          const like = await likeService.removeLike(
+            Number(postId),
+            userId,
+            Number(categoryId)
+          );
 
           if (like instanceof Error) {
             throw new Error(like.message);

@@ -120,7 +120,11 @@ const categoryController = {
     }
   },
 
-  getOneCategory: async (req: IncomingMessage, res: ServerResponse) => {
+  getOneCategory: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    page: number
+  ) => {
     let body: any = [];
 
     req
@@ -142,7 +146,8 @@ const categoryController = {
           const userId = req.user.id;
 
           const response = await categoryService.getOneCategory(
-            Number(categoryId)
+            Number(categoryId),
+            page
           );
 
           if (response instanceof Error) {

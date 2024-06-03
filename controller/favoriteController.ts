@@ -76,11 +76,15 @@ const favoriteController = {
       }
     }
   },
-  userMostFavoritedPost: async (req: IncomingMessage, res: ServerResponse) => {
+  userMostFavoritedPost: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    page: number
+  ) => {
     try {
       //@ts-ignore
       const userId = req.user.id;
-      const posts = await favoriteService.userMostFavoritedPost(userId);
+      const posts = await favoriteService.userMostFavoritedPost(userId, page);
       if (posts instanceof Error) {
         throw new Error(posts.message);
       }

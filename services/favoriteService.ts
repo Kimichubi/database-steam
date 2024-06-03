@@ -89,11 +89,13 @@ const favoriteService = {
       }
     }
   },
-  userMostFavoritedPost: async (userId: number) => {
+  userMostFavoritedPost: async (userId: number,page:number) => {
     try {
       if (!userId) {
         throw new Error("Usuario não cadastrado ou não encontrado!");
       }
+      const take = 6;
+      const skip = (page - 1) * take;
       const post = await prisma.post.findMany({
         where: {
           favorites: {
@@ -107,7 +109,8 @@ const favoriteService = {
             _count: "desc",
           },
         },
-        take: 5,
+        take,
+        skip,
         include: {
           _count: {
             select: { favorites: true },

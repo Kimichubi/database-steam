@@ -102,9 +102,12 @@ const server = createServer(async (req, res) => {
           return;
         } else if (url === "/new/category") {
           await categoryController.newCategory(req, res);
-        } else if (url === "/category/getOne") {
-          await categoryController.getOneCategory(req, res);
+        } else if (pathName === "/category/getOne" && queryParams.has("page")) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          await categoryController.getOneCategory(req, res, page);
           return;
+          
         } else if (url === "/category/follow") {
           await categoryController.followCategory(req, res);
           return;
@@ -150,11 +153,22 @@ const server = createServer(async (req, res) => {
             }
           });
           return;
-        } else if (url === "/posts/user/likes") {
-          await likeController.userMostLikedPost(req, res);
+        } else if (
+          pathName === "/posts/user/likes" &&
+          queryParams.has("page")
+        ) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+          await likeController.userMostLikedPost(req, res, page);
           return;
-        } else if (url === "/posts/user/favorited") {
-          await favoriteController.userMostFavoritedPost(req, res);
+        } else if (
+          pathName === "/posts/user/favorited" &&
+          queryParams.has("page")
+        ) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+
+          await favoriteController.userMostFavoritedPost(req, res, page);
           return;
         } else if (url === "/user/infos") {
           await userController.infos(req, res);

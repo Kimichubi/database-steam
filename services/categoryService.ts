@@ -86,11 +86,13 @@ const categoryService = {
     }
   },
 
-  getOneCategory: async (categoryId: number) => {
+  getOneCategory: async (categoryId: number, page: number) => {
     try {
       if (!categoryId) {
         throw new Error("Categoria não informada!");
       }
+      const take = 6;
+      const skip = (page - 1) * take;
       const category = await prisma.category.findUnique({
         where: {
           id: categoryId,
@@ -116,6 +118,8 @@ const categoryService = {
               name: true,
               fanArtUrl: true,
             },
+            take,
+            skip,
           },
           _count: true,
         },
