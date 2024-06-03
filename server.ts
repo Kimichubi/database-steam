@@ -174,6 +174,16 @@ const server = createServer(async (req, res) => {
           return;
         }
       }
+      //PUT WITH TOKEN
+      if (method === "PUT") {
+        if (url === "/user/update") {
+          await userController.userUpdateEmailAndName(req, res);
+          return;
+        } else if (url === "/user/update/password") {
+          await userController.userUpdatePassword(req, res);
+          return;
+        }
+      }
       //DELETE with TOKEN
       if (method === "DELETE") {
         if (url === "/post/delete") {

@@ -80,6 +80,15 @@ const postService = {
         where: {
           id: postId,
         },
+        select: {
+          name: true,
+          id: true,
+          fanArtUrl: true,
+          author: { select: { name: true } },
+          categoryId: true,
+          category: { select: { name: true } },
+          _count: true,
+        },
       });
       if (!post) {
         throw new Error("Post não existe!");

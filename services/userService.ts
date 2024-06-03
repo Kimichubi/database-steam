@@ -234,6 +234,88 @@ const userService = {
       }
     }
   },
+  userUpdateEmailAndName: async (
+    email: string,
+    name: string,
+    userId: number
+  ) => {
+    try {
+      if (!email) {
+        throw new Error("Email não informado!");
+      } else if (!name) {
+        throw new Error("Nome não informado!");
+      } else if (!userId) {
+        throw new Error("User não informado!");
+      }
+
+      const userUpdate = await prisma.users.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          name,
+          email,
+        },
+        select: {
+          name: true,
+          email: true,
+        },
+      });
+
+      return userUpdate;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  userUpdatePassword: async (
+    currentPassword: string,
+    newPassword: string,
+    userId: number
+  ) => {
+    try {
+      if (!currentPassword) {
+        throw new Error("currentPassword não informado!");
+      } else if (!newPassword) {
+        throw new Error("newPassword não informado!");
+      } else if (!userId) {
+        throw new Error("User não informado!");
+      }
+
+      const user = await prisma.users.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      const isMatch = await bcrypt.compare(currentPassword, user!.password);
+
+      if (!isMatch) {
+        throw new Error("Senhas não são iguais!");
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const updatedPassword = await prisma.users.update({
+        where: {
+          id: user!.id,
+        },
+        data: {
+          password: hashedPassword,
+        },
+        select: {
+          name: true,
+          email: true,
+        },
+      });
+
+      return updatedPassword;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default userService;

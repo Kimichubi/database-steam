@@ -378,6 +378,92 @@ const userController = {
         }
       });
   },
+  userUpdateEmailAndName: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        if (err instanceof Error) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ email, name }] = body;
+          //@ts-ignore
+          const userId = req.user.id;
+          const userUpdated = await userService.userUpdateEmailAndName(
+            email,
+            name,
+            userId
+          );
+
+          if (userUpdated instanceof Error) {
+            throw new Error(userUpdated.message);
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: userUpdated, status: res.statusCode })
+          );
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+          }
+        }
+      });
+  },
+  userUpdatePassword: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        if (err instanceof Error) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ currentPassword, newPassword }] = body;
+          //@ts-ignore
+          const userId = req.user.id;
+          const userUpdated = await userService.userUpdatePassword(
+            currentPassword,
+            newPassword,
+            userId
+          );
+
+          if (userUpdated instanceof Error) {
+            throw new Error(userUpdated.message);
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: userUpdated, status: res.statusCode })
+          );
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+          }
+        }
+      });
+  },
 };
 
 export default userController;
