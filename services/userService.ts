@@ -178,6 +178,62 @@ const userService = {
       }
     }
   },
+  userLikedPost: async (postId: number, categoryId: number, userId: number) => {
+    try {
+      if (!userId) {
+        throw new Error("User não informado");
+      } else if (!categoryId) {
+        throw new Error("Category não informado");
+      } else if (!postId) {
+        throw new Error("Category não informado");
+      }
+      const userIsLiked = await prisma.likes.findMany({
+        where: {
+          postId,
+          categoryId,
+          userId,
+        },
+      });
+      if (userIsLiked?.length! < 1) {
+        throw new Error("Post não likado!");
+      }
+      return userIsLiked;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
+  userFavoritedPost: async (
+    postId: number,
+    categoryId: number,
+    userId: number
+  ) => {
+    try {
+      if (!userId) {
+        throw new Error("User não informado");
+      } else if (!categoryId) {
+        throw new Error("Category não informado");
+      } else if (!postId) {
+        throw new Error("Category não informado");
+      }
+      const userIsFavorited = await prisma.favorites.findMany({
+        where: {
+          postId,
+          categoryId,
+          userId,
+        },
+      });
+      if (userIsFavorited?.length! < 1) {
+        throw new Error("Post não Favoritado!");
+      }
+      return userIsFavorited;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default userService;

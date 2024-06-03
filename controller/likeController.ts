@@ -122,7 +122,7 @@ const likeController = {
           return;
         } catch (error) {
           if (error instanceof Error) {
-            res.statusCode = 200;
+            res.statusCode = 400;
             res.setHeader("Content-Type", "application/json");
             res.end(
               JSON.stringify({ message: error.message, status: res.statusCode })

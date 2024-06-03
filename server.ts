@@ -114,6 +114,18 @@ const server = createServer(async (req, res) => {
         } else if (url === "/user/unfollow") {
           await userController.unFollowCategory(req, res);
           return;
+        } else if (url === "/like/delete") {
+          await likeController.removeLike(req, res);
+          return;
+        } else if (url === "/favorite/delete") {
+          await favoriteController.removeFavorite(req, res);
+          return;
+        } else if (url === "/user/likes/posts") {
+          await userController.userLikedsPosts(req, res);
+          return;
+        } else if (url === "/user/favorited/posts") {
+          await userController.userFavoritedPost(req, res);
+          return;
         }
         return;
       }
@@ -166,12 +178,6 @@ const server = createServer(async (req, res) => {
       if (method === "DELETE") {
         if (url === "/post/delete") {
           await postController.deletePost(req, res);
-          return;
-        } else if (url === "/like/delete") {
-          await likeController.removeLike(req, res);
-          return;
-        } else if (url === "/favorite/delete") {
-          await favoriteController.removeFavorite(req, res);
           return;
         } else if (url === "/category/delete") {
           await categoryController.deleteCategory(req, res);

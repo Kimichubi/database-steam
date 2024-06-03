@@ -266,6 +266,118 @@ const userController = {
         }
       });
   },
+  userLikedsPosts: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId, postId }] = body;
+          if (!categoryId) {
+            throw new Error("Por favor informe o category");
+          }
+          //@ts-ignore
+          const userId = req.user.id;
+          const userLikeds = await userService.userLikedPost(
+            Number(postId),
+            Number(categoryId),
+            Number(userId)
+          );
+
+          if (userLikeds instanceof Error) {
+            //@ts-ignore
+            throw new Error(userLikeds.message);
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: userLikeds,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+          }
+        }
+      });
+  },
+  userFavoritedPost: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+
+    req
+      .on("error", (err) => {
+        if (err) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: err, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId, postId }] = body;
+          if (!categoryId) {
+            throw new Error("Por favor informe o category");
+          }
+          //@ts-ignore
+          const userId = req.user.id;
+          const userFavorited = await userService.userFavoritedPost(
+            Number(postId),
+            Number(categoryId),
+            Number(userId)
+          );
+
+          if (userFavorited instanceof Error) {
+            //@ts-ignore
+            throw new Error(userFavorited.message);
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: userFavorited,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+          }
+        }
+      });
+  },
 };
 
 export default userController;
