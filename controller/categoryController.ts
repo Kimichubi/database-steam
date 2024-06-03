@@ -60,7 +60,16 @@ const categoryController = {
 
           // Salvar as URLs dos arquivos no banco de dados
           const category = await categoryService.newCategory(name, imagesUrl);
-          console.log(category);
+          if (category instanceof Error) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                success: category.message,
+                message: "Failed to create category",
+              })
+            );
+            return;
+          }
 
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
@@ -75,7 +84,7 @@ const categoryController = {
       console.error(err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
-        JSON.stringify({ success: false, message: "Failed to create post" })
+        JSON.stringify({ success: false, message: "Failed to create category" })
       );
     }
   },

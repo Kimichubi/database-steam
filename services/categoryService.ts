@@ -7,6 +7,14 @@ const categoryService = {
         throw new Error("Name não informado!");
       }
 
+      const categoryExists = await prisma.category.findUnique({
+        where: {
+          name,
+        },
+      });
+      if (categoryExists) {
+        throw new Error("Categoria já existe!");
+      }
       const category = await prisma.category.create({
         data: {
           name,
@@ -144,6 +152,5 @@ const categoryService = {
       }
     }
   },
- 
 };
 export default categoryService;
