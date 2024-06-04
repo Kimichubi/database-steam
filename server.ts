@@ -8,7 +8,6 @@ import fs from "fs";
 import likeController from "./controller/likeController";
 import favoriteController from "./controller/favoriteController";
 import categoryController from "./controller/categoryController";
-import url from "url";
 const hostname = "localhost";
 const port = 8080;
 
@@ -205,7 +204,21 @@ const server = createServer(async (req, res) => {
           const page = parseInt(queryParams.get("page")) || 1;
           //@ts-ignore
           const query = queryParams.get("query")?.toString();
-          await categoryController.searchCategoryParams(req, res, query!, page);
+          await categoryController.searchCategoryParams(
+            req,
+            res,
+            query!,
+            Number(page)
+          );
+          return;
+        } else if (
+          pathName === "/posts/getUser/posts" &&
+          queryParams.has("page")
+        ) {
+          //@ts-ignore
+          const page = parseInt(queryParams.get("page")) || 1;
+
+          await postController.getUserPosts(req, res, page);
           return;
         }
       }

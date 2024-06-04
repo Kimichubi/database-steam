@@ -175,6 +175,36 @@ const postService = {
       }
     }
   },
+  getUserPosts: async (userId: number, page: number) => {
+    try {
+      const take = 6;
+      const skip = (page - 1) * take;
+      if (!userId) {
+        throw new Error("User não informado");
+      }
+      const posts = await prisma.post.findMany({
+        where: {
+          authorId: userId,
+        },
+        select: {
+          name: true,
+          fanArtUrl: true,
+          categoryId: true,
+          _count: true,
+          author: {
+            select: { name: true, id: true },
+          },
+        },
+        take,
+        skip,
+      });
+      return posts;
+    } catch (error) {
+      if (error instanceof Error) {
+        return error;
+      }
+    }
+  },
 };
 
 export default postService;

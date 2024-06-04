@@ -265,6 +265,39 @@ const postController = {
         return;
       });
   },
+  getUserPosts: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    page: number
+  ) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+
+      const posts = await postService.getUserPosts(userId, page);
+      if (posts instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: posts.message, status: res.statusCode })
+        );
+        return;
+      }
+      res.statusCode = 200;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
+      return;
+    } catch (error) {
+      if (error instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: error.message, status: res.statusCode })
+        );
+        return;
+      }
+    }
+  },
 };
 
 export default postController;
