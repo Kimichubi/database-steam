@@ -32,7 +32,7 @@ const postService = {
       }
     }
   },
-  deletePost: async (userId: number, postId: number) => {
+  deletePost: async (userId: number, postId: number, categoryId: number) => {
     try {
       const post = await prisma.post.findUnique({
         where: {
@@ -50,17 +50,20 @@ const postService = {
       await prisma.likes.deleteMany({
         where: {
           postId: post.id,
+          categoryId,
         },
       });
 
       await prisma.favorites.deleteMany({
         where: {
           postId: post.id,
+          categoryId,
         },
       });
       const deletedPost = await prisma.post.delete({
         where: {
           id: postId,
+          categoryId,
         },
       });
 
@@ -96,8 +99,7 @@ const postService = {
       return post;
     } catch (error) {
       if (error instanceof Error) {
-        console.log(error);
-        return error.message;
+        return error;
       }
     }
   },
@@ -187,6 +189,7 @@ const postService = {
           authorId: userId,
         },
         select: {
+          id: true,
           name: true,
           fanArtUrl: true,
           categoryId: true,

@@ -138,8 +138,10 @@ const server = createServer(async (req, res) => {
           const query = queryParams.get("query")?.toString();
           await postController.searchPostParams(req, res, query!, page);
           return;
-        }
-        return;
+        } else if (url === "/post/delete") {
+          await postController.deletePost(req, res);
+          return;
+        } else return;
       }
       //GET with TOKEN
       if (method === "GET") {
@@ -234,10 +236,7 @@ const server = createServer(async (req, res) => {
       }
       //DELETE with TOKEN
       if (method === "DELETE") {
-        if (url === "/post/delete") {
-          await postController.deletePost(req, res);
-          return;
-        } else if (url === "/category/delete") {
+        if (url === "/category/delete") {
           await categoryController.deleteCategory(req, res);
         }
         return;

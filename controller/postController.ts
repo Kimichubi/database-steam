@@ -122,9 +122,13 @@ const postController = {
         try {
           //@ts-ignore
           const userId = req.user.id;
-          const [{ postId }] = body;
+          const [{ postId, categoryId }] = body;
 
-          const post = await postService.deletePost(userId, Number(postId));
+          const post = await postService.deletePost(
+            userId,
+            Number(postId),
+            Number(categoryId)
+          );
 
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -159,6 +163,16 @@ const postController = {
           const [{ postId }] = body;
 
           const post = await postService.getPostsById(Number(postId));
+          
+          if (post instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: post.message, status: res.statusCode })
+            );
+            return;
+          }
+
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
           res.end(JSON.stringify({ message: post, status: res.statusCode }));
