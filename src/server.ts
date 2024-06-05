@@ -82,6 +82,8 @@ const server = createServer(async (req, res) => {
         }
       });
       return;
+    } else if (url === "/") {
+      return console.log("Hello world");
     }
   }
 

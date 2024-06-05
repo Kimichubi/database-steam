@@ -91,6 +91,9 @@ const server = (0, http_1.createServer)(async (req, res) => {
             });
             return;
         }
+        else if (url === "/") {
+            return console.log("Hello world");
+        }
     }
     //TOKEN
     (0, cors_1.default)()(req, res, async () => {
