@@ -1,10 +1,10 @@
 import { createServer } from "http";
-import userController from "./controller/userController";
 import cors from "cors";
-import { verifyToken } from "./token/verifyToken";
-import postController from "./controller/postController";
 import path from "path";
 import fs from "fs";
+import verifyToken from "./token/verifyToken";
+import postController from "./controller/postController";
+import userController from "./controller/userController";
 import likeController from "./controller/likeController";
 import favoriteController from "./controller/favoriteController";
 import categoryController from "./controller/categoryController";
@@ -44,7 +44,7 @@ const server = createServer(async (req, res) => {
       const filename = url.split("/").pop();
 
       //@ts-ignore
-      const filePath = path.join(__dirname, "/uploads", filename);
+      const filePath = path.join(__dirname, "../uploads", filename);
 
       //@ts-ignore
       fs.access(filePath, (err) => {
@@ -69,7 +69,7 @@ const server = createServer(async (req, res) => {
     } else if (url?.startsWith("/categoryImages/")) {
       const filename = url.split("/").pop();
       //@ts-ignore
-      const filePath = path.join(__dirname, "/categoryImages", filename);
+      const filePath = path.join(__dirname, "../categoryImages", filename);
 
       //@ts-ignore
       fs.access(filePath, (err) => {
@@ -161,7 +161,7 @@ const server = createServer(async (req, res) => {
           const filename = url.split("/").pop();
 
           //@ts-ignore
-          const filePath = path.join(__dirname, "/uploads", filename);
+          const filePath = path.join(__dirname, "../uploads", filename);
 
           //@ts-ignore
           fs.access(filePath, (err) => {

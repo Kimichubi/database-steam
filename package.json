@@ -2,8 +2,11 @@
   "name": "database",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "commonjs",
   "scripts": {
-    "dev": "ts-node-dev --respawn server.ts"
+    "dev": "ts-node-dev --respawn server.ts",
+    "build": "tsc",
+    "start": "node ./dist/server.js"
   },
   "author": "",
   "license": "ISC",

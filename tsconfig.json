@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "module": "CommonJS",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node",
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "target": "ES2016"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

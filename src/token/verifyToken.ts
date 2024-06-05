@@ -1,10 +1,9 @@
-import { IncomingMessage, Server, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
 import jwt from "jsonwebtoken";
 
 //Just a test key
-const secretToken = "secret"; // Substitua por uma chave segura
 //Function to resolve the Token
-export const verifyToken = async (
+const verifyToken = async (
   req: IncomingMessage,
   res: ServerResponse,
   next: Function
@@ -49,3 +48,4 @@ export const verifyToken = async (
     return;
   });
 };
+export default verifyToken;

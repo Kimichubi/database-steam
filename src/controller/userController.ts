@@ -1,8 +1,5 @@
 import { IncomingMessage, ServerResponse } from "http";
-import { User } from "../interface/user";
 import userService from "../services/userService";
-import { error } from "console";
-import prisma from "../prisma/prisma";
 
 const userController = {
   register: async (req: IncomingMessage, res: ServerResponse) => {

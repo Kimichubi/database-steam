@@ -1,11 +1,11 @@
 import { IncomingMessage, ServerResponse } from "http";
-import categoryService from "../services/categoryService";
+import postService from "../services/postService";
 import formidable from "formidable";
-import path from "path";
 import fs from "fs";
-import url from "url";
-const categoryController = {
-  newCategory: async (req: IncomingMessage, res: ServerResponse) => {
+import path from "path";
+
+const postController = {
+  newPost: async (req: IncomingMessage, res: ServerResponse) => {
     const form = formidable({ multiples: true });
 
     try {
@@ -22,8 +22,8 @@ const categoryController = {
           return;
         }
 
-        const imagesUrl = files.imageUrl;
-        if (!imagesUrl) {
+        const fanArtFile = files.fanArtUrl;
+        if (!fanArtFile) {
           res.writeHead(400, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({ success: false, message: "No file uploaded" })
@@ -31,13 +31,13 @@ const categoryController = {
           return;
         }
         //@ts-ignore
-        const oldPath = imagesUrl[0].filepath;
-        const uploadDir = path.join(__dirname, "../categoryImages");
+        const oldPath = fanArtFile[0].filepath;
+        const uploadDir = path.join(__dirname, "../../uploads");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         } //@ts-ignore
-        const newFileName = imagesUrl[0].newFilename;
-        const originalName = imagesUrl[0].originalFilename;
+        const newFileName = fanArtFile[0].newFilename;
+        const originalName = fanArtFile[0].originalFilename;
         const newPath = path.join(uploadDir, newFileName! + originalName!);
 
         fs.rename(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
@@ -50,67 +50,170 @@ const categoryController = {
             return;
           }
 
-          const imagesUrl = `/categoryImages/${newFileName}${originalName!.replace(
+          const fanArtUrl = `/uploads/${newFileName}${originalName!.replace(
             /\s+/g,
             ""
           )}`;
           //@ts-ignore
-          const name = fields.name[0];
-          //@ts-ignore
-
-          // Salvar as URLs dos arquivos no banco de dados
-          const category = await categoryService.newCategory(name, imagesUrl);
-          if (category instanceof Error) {
-            res.writeHead(500, { "Content-Type": "application/json" });
+          if (!fields.categoryId) {
+            res.writeHead(400, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
-                success: category.message,
-                message: "Failed to create category",
+                message: "Categoria não informada",
+                status: res.statusCode,
               })
             );
             return;
           }
+          //@ts-ignore
+          const name = fields.name[0];
+          //@ts-ignore
+          const authorId = req.user.id;
+          //@ts-ignore
+          const categoryId = fields.categoryId[0];
+          //@ts-ignore
+          const categoryToNumber = Number(categoryId);
+          // Salvar as URLs dos arquivos no banco de dados
 
+          const post = await postService.newPost(
+            authorId,
+            name,
+            fanArtUrl,
+            //@ts-ignore
+            categoryToNumber
+          );
+          if (post instanceof Error) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message: post.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
-              success: true,
-              message: "Category created successfully",
+              message: post,
+              status: res.statusCode,
             })
           );
+          return;
         });
       });
     } catch (err) {
-      console.error(err);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      res.end(
-        JSON.stringify({ success: false, message: "Failed to create category" })
-      );
-    }
-  },
-  getAllCategorys: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    page: number
-  ) => {
-    try {
-      //@ts-ignore
-      const response = await categoryService.getAllCategorys(page);
-      if (response instanceof Error) {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
+      if (err instanceof Error) {
+        res.writeHead(500, { "Content-Type": "application/json" });
         res.end(
-          JSON.stringify({ message: response.message, status: res.statusCode })
+          JSON.stringify({
+            message: err.message,
+            status: res.statusCode,
+          })
         );
         return;
       }
-      res.statusCode = 200;
-      res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ message: response, status: res.statusCode }));
-      return;
+    }
+  },
+  deletePost: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
+        return;
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          //@ts-ignore
+          const userId = req.user.id;
+          const [{ postId, categoryId }] = body;
+
+          const post = await postService.deletePost(
+            userId,
+            Number(postId),
+            Number(categoryId)
+          );
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: post, status: res.statusCode }));
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 404;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+          }
+        }
+      });
+  },
+  getPostsById: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+    req
+      .on("error", (err) => {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
+        return;
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ postId }] = body;
+
+          const post = await postService.getPostsById(Number(postId));
+
+          if (post instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: post.message, status: res.statusCode })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: post, status: res.statusCode }));
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+        return;
+      });
+  },
+  getAllPosts: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await postService.getAllPosts();
+
+      if (response) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: response, status: res.statusCode }));
+        return;
+      }
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 500;
+        res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: error.message, status: res.statusCode })
@@ -119,201 +222,99 @@ const categoryController = {
       }
     }
   },
+  getRecentPosts: async (req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await postService.getMostRecentlyPosts();
 
-  getOneCategory: async (
-    req: IncomingMessage,
-    res: ServerResponse,
-    page: number
-  ) => {
-    let body: any = [];
-
-    req
-      .on("error", (err) => {
+      if (response) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ message: response, status: res.statusCode }));
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error) {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({ message: err.message, status: res.statusCode })
+          JSON.stringify({ message: error.message, status: res.statusCode })
         );
         return;
-      })
-      .on("data", (chunk) => {
-        body.push(JSON.parse(chunk));
-      })
-      .on("end", async () => {
-        try {
-          const [{ categoryId }] = body;
-          //@ts-ignore
-          const userId = req.user.id;
-
-          const response = await categoryService.getOneCategory(
-            Number(categoryId),
-            page
-          );
-
-          if (response instanceof Error) {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({
-                message: response.message,
-                status: res.statusCode,
-              })
-            );
-            return;
-          }
-
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(
-            JSON.stringify({ message: response, status: res.statusCode })
-          );
-          return;
-        } catch (error) {
-          if (error instanceof Error) {
-            res.statusCode = 400;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({ message: error.message, status: res.statusCode })
-            );
-            return;
-          }
-        }
-      });
+      }
+    }
   },
-  followCategory: async (req: IncomingMessage, res: ServerResponse) => {
-    let body: any = [];
-
-    req
-      .on("error", (err) => {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: err.message, status: res.statusCode })
-        );
-        return;
-      })
-      .on("data", (chunk) => {
-        body.push(JSON.parse(chunk));
-      })
-      .on("end", async () => {
-        try {
-          const [{ categoryId }] = body;
-          //@ts-ignore
-          const userId = req.user.id;
-
-          const follow = await categoryService.followCategory(
-            userId,
-            Number(categoryId)
-          );
-
-          if (follow instanceof Error) {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({
-                message: follow.message,
-                status: res.statusCode,
-              })
-            );
-            return;
-          }
-
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(JSON.stringify({ message: follow, status: res.statusCode }));
-          return;
-        } catch (error) {
-          if (error instanceof Error) {
-            res.statusCode = 400;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({ message: error.message, status: res.statusCode })
-            );
-            return;
-          }
-        }
-      });
-  },
-  deleteCategory: async (req: IncomingMessage, res: ServerResponse) => {
-    let body: any = [];
-
-    req
-      .on("error", (err) => {
-        res.statusCode = 400;
-        res.setHeader("Content-Type", "application/json");
-        res.end(
-          JSON.stringify({ message: err.message, status: res.statusCode })
-        );
-        return;
-      })
-      .on("data", (chunk) => {
-        body.push(JSON.parse(chunk));
-      })
-      .on("end", async () => {
-        try {
-          const [{ categoryId }] = body;
-
-          //@ts-ignore
-          const userId = req.user.id;
-
-          const response = await categoryService.deleteCategory(
-            Number(categoryId)
-          );
-
-          if (response instanceof Error) {
-            res.statusCode = 404;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({
-                message: response.message,
-                status: res.statusCode,
-              })
-            );
-            return;
-          }
-
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          res.end(
-            JSON.stringify({ message: response, status: res.statusCode })
-          );
-          return;
-        } catch (error) {
-          if (error instanceof Error) {
-            res.statusCode = 400;
-            res.setHeader("Content-Type", "application/json");
-            res.end(
-              JSON.stringify({ message: error.message, status: res.statusCode })
-            );
-            return;
-          }
-        }
-      });
-  },
-  searchCategoryParams: async (
+  searchPostParams: async (
     req: IncomingMessage,
     res: ServerResponse,
     query: string,
     page: number
   ) => {
-    try {
-      //@ts-ignore
-      const response = await categoryService.searchCategory(query, page);
-      if (response instanceof Error) {
+    let body: any = [];
+    req
+      .on("error", (err) => {
         res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
-          JSON.stringify({ message: response.message, status: res.statusCode })
+          JSON.stringify({ message: err.message, status: res.statusCode })
+        );
+        return;
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ categoryId }] = body;
+
+          const response = await postService.searchPost(
+            query,
+            page,
+            categoryId
+          );
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({ message: response, status: res.statusCode })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
+            return;
+          }
+        }
+        return;
+      });
+  },
+  getUserPosts: async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    page: number
+  ) => {
+    try {
+      //@ts-ignore
+      const userId = req.user.id;
+
+      const posts = await postService.getUserPosts(userId, page);
+      if (posts instanceof Error) {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({ message: posts.message, status: res.statusCode })
         );
         return;
       }
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
-      res.end(JSON.stringify({ message: response, status: res.statusCode }));
+      res.end(JSON.stringify({ message: posts, status: res.statusCode }));
       return;
     } catch (error) {
       if (error instanceof Error) {
-        res.statusCode = 500;
+        res.statusCode = 400;
         res.setHeader("Content-Type", "application/json");
         res.end(
           JSON.stringify({ message: error.message, status: res.statusCode })
@@ -324,4 +325,4 @@ const categoryController = {
   },
 };
 
-export default categoryController;
+export default postController;

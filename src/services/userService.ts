@@ -1,5 +1,5 @@
-import { generateConfirmationCode } from "../helpers/code/codeGenerator";
-import { sendConfirmationEmail } from "../helpers/emailSendler/emailSendler";
+import { generateConfirmationCode } from "../helpers/code/codeGenerator"; 
+import { sendConfirmationEmail } from "../helpers/emailSendler/emailSendler"; 
 import { User } from "../interface/user";
 import prisma from "../prisma/prisma";
 import bcrypt from "bcrypt";
