@@ -8,7 +8,7 @@ import userController from "./controller/userController";
 import likeController from "./controller/likeController";
 import favoriteController from "./controller/favoriteController";
 import categoryController from "./controller/categoryController";
-const hostname = "localhost";
+
 const port = process.env.PORT || 8080;
 
 const server = createServer(async (req, res) => {
@@ -257,9 +257,5 @@ const server = createServer(async (req, res) => {
   });
 });
 
-server.listen(port, () => {
-  console.log(`Server running at Port ${port}`);
-  console.log("Database Prisma");
-});
-
+server.listen();
 export default server;
