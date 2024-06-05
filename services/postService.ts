@@ -8,7 +8,7 @@ const postService = {
     categoryId: number
   ) => {
     try {
-      if (!categoryId) {
+      if (!categoryId || categoryId === 0) {
         throw new Error("Category não informado!");
       } else if (!name) {
         throw new Error("Nome não informado!");

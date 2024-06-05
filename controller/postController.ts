@@ -55,6 +55,17 @@ const postController = {
             ""
           )}`;
           //@ts-ignore
+          if (!fields.categoryId) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                message: "Categoria não informada",
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+          //@ts-ignore
           const name = fields.name[0];
           //@ts-ignore
           const authorId = req.user.id;
@@ -163,7 +174,7 @@ const postController = {
           const [{ postId }] = body;
 
           const post = await postService.getPostsById(Number(postId));
-          
+
           if (post instanceof Error) {
             res.statusCode = 400;
             res.setHeader("Content-Type", "application/json");
