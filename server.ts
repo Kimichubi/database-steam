@@ -26,8 +26,11 @@ const server = createServer(async (req, res) => {
     } else if (url === "/user/forgot") {
       await userController.userFogortPasswordSendCode(req, res);
       return;
-    }else if (url === "/user/confirmation") {
+    } else if (url === "/user/confirmation") {
       await userController.userConfirmCode(req, res);
+      return;
+    } else if (url === "/user/update/password/byEmail") {
+      await userController.userUpdatePasswordByEmail(req, res);
       return;
     }
   }

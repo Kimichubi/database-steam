@@ -35,7 +35,6 @@ const userController = {
             //@ts-ignore
             throw new Error(user.message);
           }
-          console.log(name, email, password);
 
           res.statusCode = 200;
           res.setHeader("Content-Type", "application/json");
@@ -510,7 +509,9 @@ const userController = {
           if (error instanceof Error) {
             res.statusCode = 400;
             res.setHeader("Content-Type", "application/json");
-            res.end(JSON.stringify({ message: error, status: res.statusCode }));
+            res.end(
+              JSON.stringify({ message: error.message, status: res.statusCode })
+            );
           }
         }
       });
@@ -535,7 +536,69 @@ const userController = {
           const [{ email, confirmationCode }] = body;
           const response = await userService.userConfirmCode(
             email,
-            confirmationCode.toString()
+            confirmationCode
+          );
+          if (response instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: response.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: response,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+        }
+        return;
+      });
+  },
+  userUpdatePasswordByEmail: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ) => {
+    let body: any = [];
+
+    req
+      .on("error", (error) => {
+        if (error instanceof Error) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: error, status: res.statusCode }));
+          return;
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ email, newPassword }] = body;
+          const response = await userService.userUpdatePasswordByEmail(
+            email,
+            newPassword
           );
           if (response instanceof Error) {
             res.statusCode = 400;

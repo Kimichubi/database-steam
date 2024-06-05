@@ -355,6 +355,7 @@ const userService = {
           email,
         },
       });
+
       if (!user) {
         throw new Error("Usuario não encontrado!");
       } else if (!code) {
@@ -388,6 +389,31 @@ const userService = {
       } else {
         throw new Error("Código informado incorreto!");
       }
+    } catch (error) {
+      return error;
+    }
+  },
+  userUpdatePasswordByEmail: async (email: string, newPassword: string) => {
+    try {
+    
+      if (!email) {
+        throw new Error("Informe o email!");
+      } else if (!newPassword) {
+        throw new Error("Informe a senha!");
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const response = await prisma.users.update({
+        where: {
+          email,
+        },
+        data: {
+          password: hashedPassword,
+        },
+        select: {
+          name: true,
+        },
+      });
+      return response;
     } catch (error) {
       return error;
     }
