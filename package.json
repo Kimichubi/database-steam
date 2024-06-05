@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn server.ts",
     "build": "tsc",
     "start": "node ./dist/server.js",
-    "vercel-build": "./src npx prisma migrate deploy"
+    "vercel-build": "cd src && npx prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",
