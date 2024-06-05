@@ -1,12 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
-   previewFeatures = ["driverAdapters"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -15,69 +9,70 @@ datasource db {
 }
 
 model users {
-  id                 Int        @id @default(autoincrement())
-  email              String     @unique
-  name               String
-  password           String   
-  posts              post[]
-  favorites          favorites[]
-  likes              likes[]
-  followingCategories category[]
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @default(now())
+  id                  Int         @id @default(autoincrement())
+  email               String      @unique
+  name                String
+  password            String
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @default(now())
+  confirmationCode    String
+  confirmed           Boolean     @default(false)
+  favorites           favorites[]
+  likes               likes[]
+  posts               post[]
+  followingCategories category[]  @relation("categoryTousers")
 }
 
 model category {
-  id        Int        @id @default(autoincrement())
-  name      String     @unique
-  imageUrl     String
-  posts     post[]
-  favorites favorites[]  
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @default(now())
+  imageUrl  String
+  favorites favorites[]
   likes     likes[]
-  followers users[]    // Alterado de followingCategorys para followers
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @default(now())
+  posts     post[]
+  followers users[]     @relation("categoryTousers")
 }
 
-
-
 model post {
-  id        Int      @id @default(autoincrement())
-  name      String    
-  fanArtUrl   String @unique
-  author    users    @relation(fields: [authorId], references: [id])
-  authorId  Int
-  category category @relation(fields: [categoryId] , references: [id])
-  categoryId Int   
-  favorites favorites[]  
-  likes     likes[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id         Int         @id @default(autoincrement())
+  name       String
+  fanArtUrl  String      @unique
+  authorId   Int
+  categoryId Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @default(now())
+  favorites  favorites[]
+  likes      likes[]
+  author     users       @relation(fields: [authorId], references: [id])
+  category   category    @relation(fields: [categoryId], references: [id])
 }
 
 model favorites {
-  id        Int      @id @default(autoincrement())
-  user      users    @relation(fields: [userId], references: [id])
-  post      post     @relation(fields: [postId], references: [id])
-  category      category     @relation(fields: [categoryId], references: [id])
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  postId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
   categoryId Int
-  userId    Int
-  postId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  @@unique([userId, postId]) 
+  category   category @relation(fields: [categoryId], references: [id])
+  post       post     @relation(fields: [postId], references: [id])
+  user       users    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, postId])
 }
 
 model likes {
-  id        Int      @id @default(autoincrement())
-  user      users    @relation(fields: [userId], references: [id])
-  post      post     @relation(fields: [postId], references: [id])
-  category      category     @relation(fields: [categoryId], references: [id])
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  postId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
   categoryId Int
-  userId    Int
-  postId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  @@unique([userId, postId]) // Adiciona unicidade na combinação de userId e postId
-}
+  category   category @relation(fields: [categoryId], references: [id])
+  post       post     @relation(fields: [postId], references: [id])
+  user       users    @relation(fields: [userId], references: [id])
 
+  @@unique([userId, postId])
+}

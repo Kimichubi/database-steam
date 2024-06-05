@@ -1,3 +1,5 @@
+import { generateConfirmationCode } from "../helpers/code/codeGenerator";
+import { sendConfirmationEmail } from "../helpers/emailSendler/emailSendler";
 import { User } from "../interface/user";
 import prisma from "../prisma/prisma";
 import bcrypt from "bcrypt";
@@ -25,11 +27,14 @@ const userService = {
         throw new Error("Usuario já cadastrado!");
       }
       const hashedPassword = bcrypt.hashSync(password, 10);
+      const code = generateConfirmationCode();
+      const hashedCode = await bcrypt.hash(code, 10);
       const user = await prisma.users.create({
         data: {
           name,
           email,
           password: hashedPassword,
+          confirmationCode: hashedCode,
         },
       });
       return user;
@@ -316,7 +321,77 @@ const userService = {
       }
     }
   },
+  userFogortPasswordSendCode: async (email: string) => {
+    try {
+      const user = await prisma.users.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (!user) {
+        throw new Error("Usuario não encontrado");
+      }
 
+      const code = generateConfirmationCode();
+      const hashedCode = await bcrypt.hash(code, 10);
+      await prisma.users.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          confirmationCode: hashedCode,
+        },
+      });
+      const sendConfirmatioN = sendConfirmationEmail(Number(code), user.email);
+      return sendConfirmatioN;
+    } catch (error) {
+      return error;
+    }
+  },
+  userConfirmCode: async (email: string, code: string) => {
+    try {
+      const user = await prisma.users.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (!user) {
+        throw new Error("Usuario não encontrado!");
+      } else if (!code) {
+        throw new Error("Codigo não foi digitado!");
+      }
+
+      const isMatch = await bcrypt.compare(code, user.confirmationCode);
+
+      if (isMatch) {
+        const newCode = generateConfirmationCode();
+        const newHashedCode = await bcrypt.hash(newCode, 10);
+        const response = await prisma.users.update({
+          where: {
+            email,
+          },
+          data: {
+            confirmed: true,
+          },
+          select: {
+            confirmed: true,
+          },
+        });
+        await prisma.users.update({
+          where: { email },
+          data: {
+            confirmationCode: newHashedCode,
+            confirmed: false,
+          },
+        });
+        return response;
+      } else {
+        throw new Error("Código informado incorreto!");
+      }
+    } catch (error) {
+      return error;
+    }
+  },
 };
 
 export default userService;

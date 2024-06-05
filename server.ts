@@ -23,6 +23,12 @@ const server = createServer(async (req, res) => {
     } else if (url === "/login") {
       await userController.login(req, res);
       return;
+    } else if (url === "/user/forgot") {
+      await userController.userFogortPasswordSendCode(req, res);
+      return;
+    }else if (url === "/user/confirmation") {
+      await userController.userConfirmCode(req, res);
+      return;
     }
   }
 
@@ -141,7 +147,8 @@ const server = createServer(async (req, res) => {
         } else if (url === "/post/delete") {
           await postController.deletePost(req, res);
           return;
-        } else return;
+        }
+        return;
       }
       //GET with TOKEN
       if (method === "GET") {

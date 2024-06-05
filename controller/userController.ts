@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from "http";
 import { User } from "../interface/user";
 import userService from "../services/userService";
 import { error } from "console";
+import prisma from "../prisma/prisma";
 
 const userController = {
   register: async (req: IncomingMessage, res: ServerResponse) => {
@@ -464,7 +465,115 @@ const userController = {
         }
       });
   },
+  userFogortPasswordSendCode: async (
+    req: IncomingMessage,
+    res: ServerResponse
+  ) => {
+    let body: any = [];
 
+    req
+      .on("error", (error) => {
+        if (error instanceof Error) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: error, status: res.statusCode }));
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ email }] = body;
+          const response = await userService.userFogortPasswordSendCode(email);
+          if (response instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: response.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: "Código enviado!",
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(JSON.stringify({ message: error, status: res.statusCode }));
+          }
+        }
+      });
+  },
+  userConfirmCode: async (req: IncomingMessage, res: ServerResponse) => {
+    let body: any = [];
+
+    req
+      .on("error", (error) => {
+        if (error instanceof Error) {
+          res.statusCode = 400;
+          res.setHeader("Content-Type", "application/json");
+          res.end(JSON.stringify({ message: error, status: res.statusCode }));
+          return;
+        }
+      })
+      .on("data", (chunk) => {
+        body.push(JSON.parse(chunk));
+      })
+      .on("end", async () => {
+        try {
+          const [{ email, confirmationCode }] = body;
+          const response = await userService.userConfirmCode(
+            email,
+            confirmationCode.toString()
+          );
+          if (response instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: response.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.end(
+            JSON.stringify({
+              message: response,
+              status: res.statusCode,
+            })
+          );
+          return;
+        } catch (error) {
+          if (error instanceof Error) {
+            res.statusCode = 400;
+            res.setHeader("Content-Type", "application/json");
+            res.end(
+              JSON.stringify({
+                message: error.message,
+                status: res.statusCode,
+              })
+            );
+            return;
+          }
+        }
+        return;
+      });
+  },
 };
 
 export default userController;
