@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "Node",
-    "outDir": "./public",
+    "outDir": "./dist",
     "esModuleInterop": true,
     "target": "ESNext"
   },
