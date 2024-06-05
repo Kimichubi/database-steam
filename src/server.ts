@@ -9,7 +9,7 @@ import likeController from "./controller/likeController";
 import favoriteController from "./controller/favoriteController";
 import categoryController from "./controller/categoryController";
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 
 const server = createServer(async (req, res) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
