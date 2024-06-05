@@ -257,5 +257,9 @@ const server = createServer(async (req, res) => {
   });
 });
 
-server.listen();
+server.listen(port, () => {
+  console.log(`Server running at Port ${port}`);
+  console.log("Database Prisma");
+});
+
 export default server;
