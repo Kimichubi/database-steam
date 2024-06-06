@@ -39,30 +39,35 @@ const server = createServer(async (req, res) => {
           res.end("File not found");
           return;
         } else {
-          const destinationPath =
-            "/opt/render/project/src/categoryImages/" +
-            path.basename(filePath) +
-            "bg3.jpg"; // Define o caminho de destino
-          fs.copyFile(filePath, destinationPath, (err) => {
-            // Copia o arquivo para o destino
+          // Ler o conteúdo do arquivo
+          fs.readFile(filePath, (err, data) => {
             if (err) {
-              console.error("Error copying file:", err);
+              console.error("Error reading file:", err);
               res.statusCode = 500;
               res.end("Internal Server Error");
               return;
             }
-            // Remove o arquivo de origem após a cópia bem-sucedida
-            fs.unlink(filePath, (err) => {
+
+            // Define o caminho de destino
+            const destinationPath =
+              "/opt/render/project/src/categoryImages/" +
+              path.basename(filePath) +
+              "bg3.jpg";
+
+            // Escreve o conteúdo do arquivo em um novo arquivo no diretório de destino
+            fs.writeFile(destinationPath, data, (err) => {
               if (err) {
-                console.error("Error deleting file:", err);
+                console.error("Error writing file:", err);
                 res.statusCode = 500;
                 res.end("Internal Server Error");
                 return;
               }
-              console.log("File moved successfully");
-              // Envie a resposta após a cópia e exclusão bem-sucedidas
+
+              console.log("File copied successfully");
+
+              // Envie a resposta após a cópia bem-sucedida
               res.statusCode = 200;
-              res.end("File moved successfully");
+              res.end("File copied successfully");
             });
           });
         }
