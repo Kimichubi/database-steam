@@ -35,12 +35,14 @@ const postController = {
         const uploadDir = path.join(__dirname, "../../uploads");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
-        } //@ts-ignore
+        }
+        //@ts-ignore
         const newFileName = fanArtFile[0].newFilename;
         const originalName = fanArtFile[0].originalFilename;
         const newPath = path.join(uploadDir, newFileName! + originalName!);
 
-        fs.rename(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
+        // Copia o arquivo temporário para o destino desejado
+        fs.copyFile(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
           if (err) {
             console.error(err);
             res.writeHead(500, { "Content-Type": "application/json" });
