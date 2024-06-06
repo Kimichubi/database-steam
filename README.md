@@ -1,4 +1,8 @@
-Projeto relacionado à o front-end steam-fans, este projeto teve como ideia principal fazer um web-site aonde os usuarios, podem, criar suas categorias de jogos favoritos, e postar suas Fan-arts, cada categoria é unica, cada postagem também é unica.
+https://master--steam-fans-arts.netlify.app
+Projeto relacionado à o front-end steam-fans, este projeto teve como ideia principal fazer um web-site aonde os usuarios, podem, criar suas categorias de jogos favoritos, e postar suas Fan-arts, cada categoria é unica, cada postagem também é unica
+
+O projeto teve intuito na prática do NodeJs puro, para adquirir um conhecimento mais aprofundado de como a ferramente funciona.
+
 Modelos do banco de dados :
 
 ![image](https://github.com/Kimichubi/database-steam/assets/145304741/12674a1e-245e-4d72-9a17-dd45cc8e97f8)
