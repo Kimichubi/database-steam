@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --respawn server.ts",
     "build": "tsc",
-    "start": "node public/server.js",
-    "vercel-build": "cd src && npx prisma migrate deploy"
+    "start": "node dist/server.js",
+    "vercel-build": "cd src && npx prisma generate && npx prisma migrate deploy"
   },
   "author": "",
   "license": "ISC",
