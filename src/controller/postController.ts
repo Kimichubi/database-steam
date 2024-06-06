@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 const postController = {
-  newPost: async (req: IncomingMessage, res: ServerResponse) => {
+  newCategory: async (req: IncomingMessage, res: ServerResponse) => {
     const form = formidable({ multiples: true });
 
     try {
@@ -22,36 +22,24 @@ const postController = {
           return;
         }
 
-        const fanArtFile = files.fanArtUrl;
-        if (!fanArtFile) {
+        const fanArtUrl = files.fanArtUrl;
+        if (!fanArtUrl) {
           res.writeHead(400, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({ success: false, message: "No file uploaded" })
           );
           return;
         }
-        //@ts-ignore
-        const oldPath = fanArtFile[0].path; // Use 'path' instead of 'filepath'
-        const uploadDir = path.join(__dirname, "../../uploads");
+
+        const oldPath = fanArtUrl[0].filepath;
+        const uploadDir = path.join(__dirname, "../../categoryImages");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
 
-        const newFileName = fanArtFile[0].newFilename;
-        const originalName = fanArtFile[0].originalFilename;
-        const newPath = path.join(uploadDir, newFileName + originalName);
-
-        // Verifica se o arquivo temporário existe antes de tentar copiá-lo
-        if (!fs.existsSync(oldPath)) {
-          res.writeHead(404, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              success: false,
-              message: "Temporary file not found",
-            })
-          );
-          return;
-        }
+        const newFileName = fanArtUrl[0].newFilename;
+        const originalName = fanArtUrl[0].originalFilename;
+        const newPath = path.join(uploadDir, newFileName! + originalName!);
 
         // Copia o arquivo temporário para o destino desejado
         fs.copyFile(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
@@ -63,24 +51,30 @@ const postController = {
             );
             return;
           }
-          //@ts-ignore
-          const fanArtUrl = `/uploads/${newFileName}${originalName.replace(
+
+          const fanArtUrl = `/categoryImages/${newFileName}${originalName!.replace(
             /\s+/g,
             ""
           )}`;
-
           //@ts-ignore
           const name = fields.name[0];
-
-          // Salvar as URLs dos arquivos no banco de dados
           //@ts-ignore
-          const post = await postService.newPost(name, fanArtUrl);
-          if (post instanceof Error) {
+          const categoryId = fields.categoryId[0];
+          //@ts-ignore
+          const userId = req.user.id;
+          // Salvar as URLs dos arquivos no banco de dados
+          const category = await postService.newPost(
+            userId,
+            name,
+            fanArtUrl,
+            Number(categoryId)
+          );
+          if (category instanceof Error) {
             res.writeHead(500, { "Content-Type": "application/json" });
             res.end(
               JSON.stringify({
-                success: post.message,
-                message: "Failed to create post",
+                success: category.message,
+                message: "Failed to create category",
               })
             );
             return;
@@ -90,7 +84,7 @@ const postController = {
           res.end(
             JSON.stringify({
               success: true,
-              message: "Post created successfully",
+              message: "Category created successfully",
             })
           );
         });
@@ -99,7 +93,7 @@ const postController = {
       console.error(err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
-        JSON.stringify({ success: false, message: "Failed to create post" })
+        JSON.stringify({ success: false, message: "Failed to create category" })
       );
     }
   },
