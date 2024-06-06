@@ -129,9 +129,6 @@ const server = createServer(async (req, res) => {
 
       if (method === "POST") {
         if (url === "/upload") {
-          const tempFilePath = "path/to/temporary/file"; // Replace with the temporary file path
-          const destinationFilePath = "path/to/destination/file"; // Replace with the destination file path
-          copyFile(tempFilePath, destinationFilePath);
           await postController.newPost(req, res);
           return;
         } else if (url === "/posts/id") {
