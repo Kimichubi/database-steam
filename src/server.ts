@@ -254,6 +254,6 @@ const server = createServer(async (req, res) => {
       }
     });
   });
-}).listen(process.env.PORT ? Number(process.env.PORT) : 8080, hostname);
+}).listen(process.env.PORT ? Number(process.env.PORT) : 8080);
 
 export default server;
