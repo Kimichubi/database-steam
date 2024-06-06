@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 const postController = {
-  newCategory: async (req: IncomingMessage, res: ServerResponse) => {
+  newPost: async (req: IncomingMessage, res: ServerResponse) => {
     const form = formidable({ multiples: true });
 
     try {
