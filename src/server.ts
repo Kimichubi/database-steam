@@ -28,8 +28,8 @@ const server = createServer(async (req, res) => {
     const queryParams = parsedUrl.searchParams;
     const { method, url } = req;
 
-    // Helper function to serve static files
     //@ts-ignore
+    // Helper function to serve static files
     const serveStaticFile = (filePath) => {
       console.log(filePath);
       fs.access(filePath, (err) => {
@@ -39,8 +39,32 @@ const server = createServer(async (req, res) => {
           res.end("File not found");
           return;
         } else {
-          const fileStream = fs.createReadStream(filePath);
-          fileStream.pipe(res);
+          const destinationPath =
+            "/opt/render/project/src/categoryImages/" +
+            path.basename(filePath) +
+            "bg3.jpg"; // Define o caminho de destino
+          fs.copyFile(filePath, destinationPath, (err) => {
+            // Copia o arquivo para o destino
+            if (err) {
+              console.error("Error copying file:", err);
+              res.statusCode = 500;
+              res.end("Internal Server Error");
+              return;
+            }
+            // Remove o arquivo de origem após a cópia bem-sucedida
+            fs.unlink(filePath, (err) => {
+              if (err) {
+                console.error("Error deleting file:", err);
+                res.statusCode = 500;
+                res.end("Internal Server Error");
+                return;
+              }
+              console.log("File moved successfully");
+              // Envie a resposta após a cópia e exclusão bem-sucedidas
+              res.statusCode = 200;
+              res.end("File moved successfully");
+            });
+          });
         }
       });
     };
