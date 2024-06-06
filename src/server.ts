@@ -45,6 +45,21 @@ const server = createServer(async (req, res) => {
       });
     };
 
+    // Helper function to copy a file
+    //@ts-ignore
+    const copyFile = (source, destination) => {
+      fs.copyFile(source, destination, (err) => {
+        if (err) {
+          console.log(err);
+          res.statusCode = 500;
+          res.end("Internal Server Error");
+          return;
+        } else {
+          console.log("File copied successfully.");
+        }
+      });
+    };
+
     // Routes without token verification
     if (method === "POST") {
       if (url === "/register") {
@@ -66,11 +81,9 @@ const server = createServer(async (req, res) => {
     }
 
     if (method === "GET") {
-      //@ts-ignore
       if (pathName.startsWith("/uploads/")) {
         //@ts-ignore
-        const filename = url.split("/").pop();
-        //@ts-ignore
+        const filename = url.split("/").pop(); //@ts-ignore
         const filePath = path.join(__dirname, "../uploads", filename);
         serveStaticFile(filePath);
         return;
@@ -83,11 +96,9 @@ const server = createServer(async (req, res) => {
       } else if (url === "/posts/favoriteds") {
         await favoriteController.postWithMoreFavorites(req, res);
         return;
-        //@ts-ignore
       } else if (pathName.startsWith("/categoryImages/")) {
         //@ts-ignore
-        const filename = url.split("/").pop();
-        //@ts-ignore
+        const filename = url.split("/").pop(); //@ts-ignore
         const filePath = path.join(__dirname, "../categoryImages", filename);
         serveStaticFile(filePath);
         return;
@@ -110,6 +121,9 @@ const server = createServer(async (req, res) => {
 
       if (method === "POST") {
         if (url === "/upload") {
+          const tempFilePath = "path/to/temporary/file"; // Replace with the temporary file path
+          const destinationFilePath = "path/to/destination/file"; // Replace with the destination file path
+          copyFile(tempFilePath, destinationFilePath);
           await postController.newPost(req, res);
           return;
         } else if (url === "/posts/id") {
@@ -157,8 +171,7 @@ const server = createServer(async (req, res) => {
         ) {
           //@ts-ignore
           const page = parseInt(queryParams.get("page")) || 1;
-          const query = queryParams.get("query")?.toString();
-          //@ts-ignore
+          const query = queryParams.get("query")?.toString(); //@ts-ignore
           await postController.searchPostParams(req, res, query, page);
           return;
         } else if (url === "/post/delete") {
@@ -171,8 +184,7 @@ const server = createServer(async (req, res) => {
         //@ts-ignore
         if (url.startsWith("/uploads/")) {
           //@ts-ignore
-          const filename = url.split("/").pop();
-          //@ts-ignore
+          const filename = url.split("/").pop(); //@ts-ignore
           const filePath = path.join(__dirname, "../uploads", filename);
           serveStaticFile(filePath);
           return;
