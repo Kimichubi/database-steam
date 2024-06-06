@@ -69,20 +69,38 @@ const postController = {
             ""
           )}`;
 
-          // Restante do código para salvar as URLs dos arquivos no banco de dados e responder com sucesso...
+          //@ts-ignore
+          const name = fields.name[0];
+
+          // Salvar as URLs dos arquivos no banco de dados
+          //@ts-ignore
+          const post = await postService.newPost(name, fanArtUrl);
+          if (post instanceof Error) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(
+              JSON.stringify({
+                success: post.message,
+                message: "Failed to create post",
+              })
+            );
+            return;
+          }
+
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              success: true,
+              message: "Post created successfully",
+            })
+          );
         });
       });
     } catch (err) {
-      if (err instanceof Error) {
-        res.writeHead(500, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            message: err.message,
-            status: res.statusCode,
-          })
-        );
-        return;
-      }
+      console.error(err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({ success: false, message: "Failed to create post" })
+      );
     }
   },
   deletePost: async (req: IncomingMessage, res: ServerResponse) => {
