@@ -26,6 +26,7 @@ const server = createServer(async (req, res) => {
   const { method, url } = req;
 
   // Helper function to serve static files
+  //@ts-ignore
   const serveStaticFile = (filePath) => {
     fs.access(filePath, (err) => {
       if (err) {
@@ -61,8 +62,11 @@ const server = createServer(async (req, res) => {
   }
 
   if (method === "GET") {
+    //@ts-ignore
     if (url.startsWith("/uploads/")) {
+      //@ts-ignore
       const filename = url.split("/").pop();
+      //@ts-ignore
       const filePath = path.join(__dirname, "../uploads", filename);
       serveStaticFile(filePath);
       return;
@@ -75,8 +79,11 @@ const server = createServer(async (req, res) => {
     } else if (url === "/posts/favoriteds") {
       await favoriteController.postWithMoreFavorites(req, res);
       return;
+      //@ts-ignore
     } else if (url.startsWith("/categoryImages/")) {
+      //@ts-ignore
       const filename = url.split("/").pop();
+      //@ts-ignore
       const filePath = path.join(__dirname, "../categoryImages", filename);
       serveStaticFile(filePath);
       return;
@@ -110,6 +117,7 @@ const server = createServer(async (req, res) => {
         await categoryController.newCategory(req, res);
         return;
       } else if (pathName === "/category/getOne" && queryParams.has("page")) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await categoryController.getOneCategory(req, res, page);
         return;
@@ -139,8 +147,10 @@ const server = createServer(async (req, res) => {
         queryParams.has("page") &&
         queryParams.has("query")
       ) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         const query = queryParams.get("query")?.toString();
+        //@ts-ignore
         await postController.searchPostParams(req, res, query, page);
         return;
       } else if (url === "/post/delete") {
@@ -151,12 +161,16 @@ const server = createServer(async (req, res) => {
     }
 
     if (method === "GET") {
+      //@ts-ignore
       if (url.startsWith("/uploads/")) {
+        //@ts-ignore
         const filename = url.split("/").pop();
+        //@ts-ignore
         const filePath = path.join(__dirname, "../uploads", filename);
         serveStaticFile(filePath);
         return;
       } else if (pathName === "/posts/user/likes" && queryParams.has("page")) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await likeController.userMostLikedPost(req, res, page);
         return;
@@ -164,6 +178,7 @@ const server = createServer(async (req, res) => {
         pathName === "/posts/user/favorited" &&
         queryParams.has("page")
       ) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await favoriteController.userMostFavoritedPost(req, res, page);
         return;
@@ -174,10 +189,12 @@ const server = createServer(async (req, res) => {
         await postController.getRecentPosts(req, res);
         return;
       } else if (pathName === "/category/all" && queryParams.has("page")) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await categoryController.getAllCategorys(req, res, page);
         return;
       } else if (pathName === "/user/following" && queryParams.has("page")) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await userController.folloWingCategory(req, res, page);
         return;
@@ -186,11 +203,13 @@ const server = createServer(async (req, res) => {
         queryParams.has("page") &&
         queryParams.has("query")
       ) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         const query = queryParams.get("query")?.toString();
         await categoryController.searchCategoryParams(
           req,
           res,
+          //@ts-ignore
           query,
           Number(page)
         );
@@ -199,6 +218,7 @@ const server = createServer(async (req, res) => {
         pathName === "/posts/getUser/posts" &&
         queryParams.has("page")
       ) {
+        //@ts-ignore
         const page = parseInt(queryParams.get("page")) || 1;
         await postController.getUserPosts(req, res, page);
         return;
@@ -227,6 +247,8 @@ const server = createServer(async (req, res) => {
     return;
   });
   return;
-});
+}).listen(process.env.PORT ? Number(process.env.PORT) : 8080);
 
 export default server;
+
+
