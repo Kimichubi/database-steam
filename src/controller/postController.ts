@@ -84,7 +84,7 @@ const postController = {
           res.end(
             JSON.stringify({
               success: true,
-              message: "Category created successfully",
+              message: "Post created successfully",
             })
           );
         });
