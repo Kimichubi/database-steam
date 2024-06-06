@@ -32,45 +32,24 @@ const server = createServer(async (req, res) => {
     // Helper function to serve static files
     const serveStaticFile = (filePath) => {
       console.log(filePath);
-      fs.access(filePath, (err) => {
+      fs.access(filePath, fs.constants.F_OK, (err) => {
         if (err) {
           console.log(err);
           res.statusCode = 404;
           res.end("File not found");
           return;
-        } else {
-          // Ler o conteúdo do arquivo
-          fs.readFile(filePath, (err, data) => {
-            if (err) {
-              console.error("Error reading file:", err);
-              res.statusCode = 500;
-              res.end("Internal Server Error");
-              return;
-            }
-
-            // Define o caminho de destino
-            const destinationPath =
-              "/opt/render/project/src/categoryImages/" +
-              path.basename(filePath) +
-              "bg3.jpg";
-
-            // Escreve o conteúdo do arquivo em um novo arquivo no diretório de destino
-            fs.writeFile(destinationPath, data, (err) => {
-              if (err) {
-                console.error("Error writing file:", err);
-                res.statusCode = 500;
-                res.end("Internal Server Error");
-                return;
-              }
-
-              console.log("File copied successfully");
-
-              // Envie a resposta após a cópia bem-sucedida
-              res.statusCode = 200;
-              res.end("File copied successfully");
-            });
-          });
         }
+        // Ler o conteúdo do arquivo
+        fs.readFile(filePath, (err, data) => {
+          if (err) {
+            console.error("Error reading file:", err);
+            res.statusCode = 500;
+            res.end("Internal Server Error");
+            return;
+          }
+          res.writeHead(200, { "Content-Type": "image/jpeg" }); // Adjust content type based on file type
+          res.end(data);
+        });
       });
     };
 
