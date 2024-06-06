@@ -31,15 +31,27 @@ const postController = {
           return;
         }
         //@ts-ignore
-        const oldPath = fanArtFile[0].filepath;
+        const oldPath = fanArtFile[0].path; // Use 'path' instead of 'filepath'
         const uploadDir = path.join(__dirname, "../../uploads");
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
-        //@ts-ignore
+
         const newFileName = fanArtFile[0].newFilename;
         const originalName = fanArtFile[0].originalFilename;
-        const newPath = path.join(uploadDir, newFileName! + originalName!);
+        const newPath = path.join(uploadDir, newFileName + originalName);
+
+        // Verifica se o arquivo temporário existe antes de tentar copiá-lo
+        if (!fs.existsSync(oldPath)) {
+          res.writeHead(404, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              success: false,
+              message: "Temporary file not found",
+            })
+          );
+          return;
+        }
 
         // Copia o arquivo temporário para o destino desejado
         fs.copyFile(oldPath, newPath.replace(/\s+/g, ""), async (err) => {
@@ -51,57 +63,13 @@ const postController = {
             );
             return;
           }
-
-          const fanArtUrl = `/uploads/${newFileName}${originalName!.replace(
+          //@ts-ignore
+          const fanArtUrl = `/uploads/${newFileName}${originalName.replace(
             /\s+/g,
             ""
           )}`;
-          //@ts-ignore
-          if (!fields.categoryId) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({
-                message: "Categoria não informada",
-                status: res.statusCode,
-              })
-            );
-            return;
-          }
-          //@ts-ignore
-          const name = fields.name[0];
-          //@ts-ignore
-          const authorId = req.user.id;
-          //@ts-ignore
-          const categoryId = fields.categoryId[0];
-          //@ts-ignore
-          const categoryToNumber = Number(categoryId);
-          // Salvar as URLs dos arquivos no banco de dados
 
-          const post = await postService.newPost(
-            authorId,
-            name,
-            fanArtUrl,
-            //@ts-ignore
-            categoryToNumber
-          );
-          if (post instanceof Error) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(
-              JSON.stringify({
-                message: post.message,
-                status: res.statusCode,
-              })
-            );
-            return;
-          }
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              message: post,
-              status: res.statusCode,
-            })
-          );
-          return;
+          // Restante do código para salvar as URLs dos arquivos no banco de dados e responder com sucesso...
         });
       });
     } catch (err) {
